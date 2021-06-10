@@ -116,6 +116,7 @@ function add() {
         case "1":
             // Create a new li
             var li = d3.select("#list_sentences").append("li")
+                        .attr("class", "w3-display-container")
                         .attr("id", ID)
                         .text("I want movies with ");
         
@@ -165,6 +166,11 @@ function add() {
             slider_component.append('g')
                 .attr('transform', 'translate(30,30)')
                 .call(budget_slider);
+            
+            li.append("span")
+                .attr("class", "w3-button w3-display-right")
+                .on("click", function() { li.style("display", "none"); delete list_options[li.property("id")];})
+                .text("x")
 
             // Store new selectors
             list_options[ID.toString()] = {"value": select_value, "li": li, "type": typ, "order": order, "slider": slider_component};
@@ -172,13 +178,45 @@ function add() {
         case "2":
             // Create a new li
             var li = d3.select("#list_sentences").append("li")
+                        .attr("class", "w3-display-container")
                         .attr("id", ID)
                         .text("I'm looking for movies with the ");
             
+
             // Create the type selector (actor, director, writter)
             var typ = li.append("select")
                 .attr("class", "type")
-                .on('change', () => update(list_options[li.property("id")]))
+                .attr("height", 28)
+                .on('change', () => updateNamelist(list_options[li.property("id")]))
+            
+            // Add options into the selector
+            typ.selectAll("option")
+                .data(["actor", "director", "writer"])
+                .enter()
+                .append("option")
+                .text(function(d){return d;})
+                .attr("value", function(d) {return d;});
+            
+            var search_div = li.append("div")
+
+            var namelist = search_div.append("input")
+                            .attr("type", "text")
+                            .attr("placeholder", "Enter the name...")
+                            .on("click", () => d3.selectAll(".autocomp_box").style("display", "none"))
+                            .on("keyup", (e) => autocomp(e, autocomp_box))
+            
+            var autocomp_box = search_div.append("div")
+                                        .attr("class", "autocomp_box")
+                                        .style("display", "none")
+
+            li.append("span")
+                .attr("class", "w3-button w3-display-right")
+                .on("click", function() { li.style("display", "none"); delete list_options[li.property("id")];})
+                .text("x")
+
+            // Store new selectors
+            list_options[ID.toString()] = {"value": select_value, "li": li, "type": typ, "name": namelist};
+            break;
     }
     // Increment the id variable
     ID += 1
@@ -291,4 +329,35 @@ function updateSlider(list_opt) {
                         .call(new_slider);
 
 };
+
+function updateNamelist(list_opt) {
+
+}
+
+
+
+function autocomp(e, autocomp_box) {
+    autocomp_box.selectAll("li").remove();
+    let userData = e.target.value; //user enetered data
+    let emptyArray = [];
+
+    let suggestions = ["arbre", "abricot", "bol"];
+
+    if(userData != ""){
+     
+        emptyArray = suggestions.filter((data)=>{
+            //filtering array value and user characters to lowercase and return only those words which are start with user enetered chars
+            return data.toLocaleLowerCase().startsWith(userData.toLocaleLowerCase()); 
+        });
+        console.log(emptyArray)
+        emptyArray = emptyArray.map((data)=>{
+            autocomp_box.append("li")
+                        .on("click", function() { e.target.value = data; autocomp_box.selectAll("li").remove() })
+                        .text(data)
+        });
+        autocomp_box.style("display", "block") //show autocomplete box
+    } else{
+        autocomp_box.style("display", "none") //hide autocomplete box
+    }
+}
 
