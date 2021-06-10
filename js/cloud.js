@@ -10,6 +10,12 @@ var selected_words = [] // Words to print (STILL UNUSED)
 
 var fontScale = d3.scaleLinear().range([5, range_max]); 
 
+// Filter variables
+var movies = [];
+var ID = 0;
+var list_options = [];
+
+
 d3.csv("data/movies.csv", function(d) {
     return {
         budget: +d.budget,
@@ -28,10 +34,10 @@ d3.csv("data/movies.csv", function(d) {
         writer: d.writer,
         year: +d.year
     };
-}).then(function(csv) {
-    
+}).then(function(csv) {    
+    movies = csv;
     csv.forEach(function(d,i) {
-        words.push({"text": d.name, "size": d.score});
+        words.push({"text": d.name, "size": d.runtime});
     });
     words.length = max_words; // Print only max_words words
     console.log(csv[20]);
@@ -64,7 +70,7 @@ d3.csv("data/movies.csv", function(d) {
                     var tmp_words = [];
                     // Reload the array with new size
                     csv.forEach(function(e,i) {
-                        tmp_words.push({"text": e.name, "size": +e.score});
+                        tmp_words.push({"text": e.name, "size": e.runtime});
                     });
                     tmp_words.length = max_words;
                     console.log(rangeMax);
@@ -97,5 +103,192 @@ function draw(output) {
                 .attr("text-anchor", "middle")
                 .attr("transform", d => "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")")
                 .text(d => d.text);
-}
+};
+
+
+function add() {
+    console.log("OK");
+    var select_value = document.getElementById("preset_sentence").value;
+    console.log(select_value);
+
+    //if (select_value == 1) {
+    switch(select_value) {
+        case "1":
+            // Create a new li
+            var li = d3.select("#list_sentences").append("li")
+                        .attr("id", ID)
+                        .text("I want movies with ");
+        
+            // Create the type selector (budget, gross, runtime,...)
+            var typ = li.append("select")
+                .attr("class", "type")
+                .on('change', () => updateSlider(list_options[li.property("id")]))
+            
+            // Add options into the selector
+            typ.selectAll("option")
+                .data(["budget", "gross", "runtime", "score", "votes"])
+                .enter()
+                .append("option")
+                .text(function(d){return d;})
+                .attr("value", function(d) {return d;});
+
+            // Create the order selector (higher than, lower than, equals to)
+            var order = li.append("select")
+                .selectAll("option")
+                .data(["higher than", "equals to", "lower than"])
+                .enter()
+                .append("option")
+                .text(function(d){return d;})
+                .attr("value", function(d){return d;});
+                
+            // Initialize the first slider
+            let minBudget = d3.min(movies, d => d.budget);
+            let maxBudget = d3.max(movies, d => d.budget);
+        
+            // Create the default slider
+            var budget_slider = d3.sliderHorizontal()
+                .min(minBudget)
+                .max(maxBudget)
+                .step(1000000)
+                .ticks(5)
+                .width(500)
+                .displayValue(true)
+                .on('onchange', (val) => {
+            });
+
+            // Create the svg component for the slider
+            var slider_component = li.append('svg')
+                .attr('width', 700)
+                .attr('height', 70)
+
+            // Add the slider into the component
+            slider_component.append('g')
+                .attr('transform', 'translate(30,30)')
+                .call(budget_slider);
+
+            // Store new selectors
+            list_options[ID.toString()] = {"value": select_value, "li": li, "type": typ, "order": order, "slider": slider_component};
+            break;
+        case "2":
+            // Create a new li
+            var li = d3.select("#list_sentences").append("li")
+                        .attr("id", ID)
+                        .text("I'm looking for movies with the ");
+            
+            // Create the type selector (actor, director, writter)
+            var typ = li.append("select")
+                .attr("class", "type")
+                .on('change', () => update(list_options[li.property("id")]))
+    }
+    // Increment the id variable
+    ID += 1
+              
+        /*var options = dropDown.selectAll("option")
+            .data(d3.map(movies, function(d){return d.company;}).values())
+            .enter()
+            .append("option")
+            .text(function(d){return d;})
+            .attr("value",function(d){return d;});*/
+};
+
+function updateSlider(list_opt) {
+    // Selector for the type of slider (budget/gross/...)
+    var selector = list_opt["type"]
+    // li component
+    var li = list_opt["li"]
+
+    // Value of the type selector
+    console.log(selector.property("value"))
+    let value = selector.property("value");
+
+    // Remove the previous svg component (for the slider)
+    list_opt["slider"].remove();
+
+    // Create a new svg for the new slider
+    let new_slider_component = li.append('svg')
+            .attr('width', 700)
+            .attr('height', 70)
+
+    // Uodate the dict
+    list_opt["slider"] = new_slider_component;
+
+    // Create the new slider depending on the type value
+    switch (value) {
+        case "budget":
+            let minBudget = d3.min(movies, d => d.budget);
+            let maxBudget = d3.max(movies, d => d.budget);
+        
+            var new_slider = d3.sliderHorizontal()
+                .min(minBudget)
+                .max(maxBudget)
+                .step(1000000)
+                .ticks(5)
+                .width(500)
+                .displayValue(true)
+                .on('onchange', (val) => {
+            });
+            break;
+        case "gross":
+            let minGross = 0;
+            let maxGross = Math.ceil(d3.max(movies, d => d.gross) / 1000000) * 1000000;
+
+            var new_slider = d3.sliderHorizontal()
+                .min(minGross)
+                .max(maxGross)
+                .step(1000000)
+                .ticks(5)
+                .width(500)
+                .displayValue(true)
+                .on('onchange', (val) => {
+            });
+            break;
+        case "runtime":
+            let minRuntime = d3.min(movies, d => d.runtime);
+            let maxRuntime = d3.max(movies, d => d.runtime);
+        
+            var new_slider = d3.sliderHorizontal()
+                .min(minRuntime)
+                .max(maxRuntime)
+                .step(1)
+                .width(500)
+                .displayValue(true)
+                .on('onchange', (val) => {
+            });
+            break;
+        case "score":
+            let minScore = 0;
+            let maxScore = 10;
+        
+            var new_slider = d3.sliderHorizontal()
+                .min(minScore)
+                .max(maxScore)
+                .step(1)
+                .width(500)
+                .displayValue(true)
+                .on('onchange', (val) => {
+                });
+            break;
+        case "votes":
+            let minVotes = 0;
+            let maxVotes = Math.ceil(d3.max(movies, d => d.votes) / 100000) * 100000;
+        
+            var new_slider = d3.sliderHorizontal()
+                .min(minVotes)
+                .max(maxVotes)
+                .step(1000)
+                .width(500)
+                .ticks(5)
+                .displayValue(true)
+                .on('onchange', (val) => {
+                });
+            break;
+        default:
+    }
+
+    // Add the slider into the svg component
+    new_slider_component.append('g')
+                        .attr('transform', 'translate(30,30)')
+                        .call(new_slider);
+
+};
 
