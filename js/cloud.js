@@ -19,6 +19,10 @@ var movies = [];
 var actorsList = [];
 var directorList = []
 var writerList = []
+var companyList = []
+var countryList = []
+
+//d3.select("body").on("click", function () { d3.selectAll(".autocomp_box").style("display", "none"); })
 
 
 d3.csv("data/movies.csv", function(d) {
@@ -46,12 +50,23 @@ d3.csv("data/movies.csv", function(d) {
         actorsList.push(d.star);
         directorList.push(d.director);
         writerList.push(d.writer);
+        companyList.push(d.company);
+        countryList.push(d.country);
     });
 
     // Keep unique values
     actorsList = actorsList.filter((v, i, a) => a.indexOf(v) === i);
     directorList = directorList.filter((v, i, a) => a.indexOf(v) === i);
     writerList = writerList.filter((v, i, a) => a.indexOf(v) === i);
+    companyList = companyList.filter((v, i, a) => a.indexOf(v) === i);
+    countryList = countryList.filter((v, i, a) => a.indexOf(v) === i);
+
+    // Sort in alphabetical order
+    actorsList.sort();
+    directorList.sort();
+    writerList.sort();
+    companyList.sort();
+    countryList.sort();
 
     words.length = max_words; // Print only max_words words
     console.log(csv[20]);
@@ -214,10 +229,13 @@ function add() {
             var search_div = li.append("div")
 
             var namelist = search_div.append("input")
-                            .attr("type", "text")
-                            .attr("placeholder", "Enter the name...")
-                            .on("click", () => d3.selectAll(".autocomp_box").style("display", "none"))
-                            .on("keyup", (e) => autocomp(e, autocomp_box, list_options[li.property("id")]))
+                           .attr("type", "text")
+                           .attr("placeholder", "Enter the name...")
+                           .on("click", function (e) { d3.selectAll(".autocomp_box").style("display", "none"); 
+                                                        li.select(".autocomp_box").style("display", "block"); 
+                                                        autocomp(e, autocomp_box, list_options[li.property("id")]);
+                        })
+                           .on("keyup", (e) => autocomp(e, autocomp_box, list_options[li.property("id")]))
             
             var autocomp_box = search_div.append("div")
                                         .attr("class", "autocomp_box")
@@ -229,8 +247,53 @@ function add() {
                 .text("x")
 
             // Store new selectors
-            list_options[ID.toString()] = {"value": select_value, "li": li, "type": typ, "name": namelist};
+            list_options[ID.toString()] = {"value": select_value, "li": li, "type": typ, "name": actorsList};
             break;
+        case "3":
+            // Create a new li
+            var li = d3.select("#list_sentences").append("li")
+                        .attr("class", "w3-display-container")
+                        .attr("id", ID)
+                        .text("I want movies from the ");
+           
+
+           // Create the type selector (actor, director, writter)
+           var typ = li.append("select")
+               .attr("class", "type")
+               .attr("height", 28)
+               .on('change', () => updateNamelist(list_options[li.property("id")]))
+           
+           // Add options into the selector
+           typ.selectAll("option")
+               .data(["company", "country"])
+               .enter()
+               .append("option")
+               .text(function(d){return d;})
+               .attr("value", function(d) {return d;});
+           
+           var search_div = li.append("div")
+
+           var namelist = search_div.append("input")
+                           .attr("type", "text")
+                           .attr("placeholder", "Enter the name...")
+                           .on("click", function (e) { d3.selectAll(".autocomp_box").style("display", "none"); 
+                                                        li.select(".autocomp_box").style("display", "block"); 
+                                                        autocomp(e, autocomp_box, list_options[li.property("id")]);
+                            })
+                            .on("keyup", (e) => autocomp(e, autocomp_box, list_options[li.property("id")]))
+           
+           var autocomp_box = search_div.append("div")
+                                       .attr("class", "autocomp_box")
+                                       .style("display", "none")
+
+           li.append("span")
+               .attr("class", "w3-button w3-display-right")
+               .on("click", function() { li.style("display", "none"); delete list_options[li.property("id")];})
+               .text("x")
+
+           // Store new selectors
+           list_options[ID.toString()] = {"value": select_value, "li": li, "type": typ, "name": companyList};
+           break;
     }
     // Increment the id variable
     ID += 1
@@ -362,17 +425,23 @@ function updateNamelist(list_opt) {
         case "writer":
             list_opt["name"] = writerList;
             break;
+        case "company":
+            list_opt["name"] = companyList;
+            break;
+        case "country":
+            list_opt["name"] = countryList;
+            break;
     }
 }
 
 
 
-function autocomp(e, autocomp_box) {
+function autocomp(e, autocomp_box, list_opt) {
     autocomp_box.selectAll("li").remove();
     let userData = e.target.value; //user enetered data
     let emptyArray = [];
 
-    let suggestions = ["arbre", "abricot", "bol"];
+    let suggestions = list_opt["name"];
 
     if(userData != ""){
      
@@ -380,15 +449,20 @@ function autocomp(e, autocomp_box) {
             //filtering array value and user characters to lowercase and return only those words which are start with user enetered chars
             return data.toLocaleLowerCase().startsWith(userData.toLocaleLowerCase()); 
         });
-        console.log(emptyArray)
-        emptyArray = emptyArray.map((data)=>{
-            autocomp_box.append("li")
-                        .on("click", function() { e.target.value = data; autocomp_box.selectAll("li").remove() })
-                        .text(data)
-        });
-        autocomp_box.style("display", "block") //show autocomplete box
+        //console.log(emptyArray)
+        
+        //autocomp_box.style("display", "block") //show autocomplete box
     } else{
-        autocomp_box.style("display", "none") //hide autocomplete box
+        emptyArray = suggestions;
+        //autocomp_box.style("display", "none") //hide autocomplete box
     }
+
+    console.log(emptyArray);
+    emptyArray = emptyArray.map((data)=>{
+        autocomp_box.append("li")
+                    .attr("class", "autocomp-items")
+                    .on("click", function() { e.target.value = data; autocomp_box.selectAll("li").remove(); autocomp_box.style("display", "none"); })
+                    .text(data)
+    });
 }
 
