@@ -6,14 +6,19 @@ const width = document.getElementById("container").offsetWidth * 0.95,
     fillScale = d3.scaleOrdinal(d3.schemeCategory10); // Build a discrete scale of 10 different colors
 
 var words = []; // All possible words
-var selected_words = [] // Words to print (STILL UNUSED)
 
 var fontScale = d3.scaleLinear().range([5, range_max]); 
 
 // Filter variables
-var movies = [];
 var ID = 0;
 var list_options = [];
+var selected_words = [] // Words to print (STILL UNUSED)
+
+// Data lists
+var movies = [];
+var actorsList = [];
+var directorList = []
+var writerList = []
 
 
 d3.csv("data/movies.csv", function(d) {
@@ -38,7 +43,16 @@ d3.csv("data/movies.csv", function(d) {
     movies = csv;
     csv.forEach(function(d,i) {
         words.push({"text": d.name, "size": d.runtime});
+        actorsList.push(d.star);
+        directorList.push(d.director);
+        writerList.push(d.writer);
     });
+
+    // Keep unique values
+    actorsList = actorsList.filter((v, i, a) => a.indexOf(v) === i);
+    directorList = directorList.filter((v, i, a) => a.indexOf(v) === i);
+    writerList = writerList.filter((v, i, a) => a.indexOf(v) === i);
+
     words.length = max_words; // Print only max_words words
     console.log(csv[20]);
 
@@ -203,7 +217,7 @@ function add() {
                             .attr("type", "text")
                             .attr("placeholder", "Enter the name...")
                             .on("click", () => d3.selectAll(".autocomp_box").style("display", "none"))
-                            .on("keyup", (e) => autocomp(e, autocomp_box))
+                            .on("keyup", (e) => autocomp(e, autocomp_box, list_options[li.property("id")]))
             
             var autocomp_box = search_div.append("div")
                                         .attr("class", "autocomp_box")
@@ -331,7 +345,24 @@ function updateSlider(list_opt) {
 };
 
 function updateNamelist(list_opt) {
+     // Selector for the type of slider (budget/gross/...)
+     var selector = list_opt["type"]
 
+     // Value of the type selector
+    console.log(selector.property("value"))
+    let value = selector.property("value");
+
+    switch (value) {
+        case "actor":
+            list_opt["name"] = actorsList;
+            break;
+        case "director":
+            list_opt["name"] = directorList;
+            break;
+        case "writer":
+            list_opt["name"] = writerList;
+            break;
+    }
 }
 
 
