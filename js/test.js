@@ -4,75 +4,75 @@ const w = 1000;
 const maxDots = 500
 
 var movies = [];
-var nodes = []
-
+var nodes = [];
+var magnets=new Map();
+var flag=1;
 var simulation;
+var currrentMagnetForce=0; //will be used to create custom forces for each magnet
+var currentMagnetid=-1; //will be use to add a certain magnet inside the svg
+var mapOfMagnet=new Map();
+var list;
 
 let svg = d3.select("body")
 .append("svg")
 .attr("width", w)
 .attr("height", h)
 .on('click',(event) => {
-    
-
-    d3.select("svg").append('rect').attr('x',xm)
-    
-    simulation.alpha(0.2)
     var coordinates= d3.pointer(event);
     var xm = coordinates[0];
     var ym = coordinates[1];
+    //adjust magnets position
     
-    svg.select("#magnet").remove();
-    d3.select("svg").append('rect')
-    .attr('id',"magnet")
-    .attr('x', xm)
-    .attr('y', ym)
-    .attr('width', 10)
-    .attr('height', 10)
-    .attr('stroke', 'black')
-    .attr('fill', '#69a3b2');
-
-    d3.select("svg").append('rect')
-    .attr('id',"magnet")
-    .attr('x', xm)
-    .attr('y', h-ym)
-    .attr('width', 10)
-    .attr('height', 10)
-    .attr('stroke', 'black')
-    .attr('fill', '#69a3b2');
+    if (flag==0){
     
-    //simulation.force('collision',null).force('x',null).force('y',null);
     
-    simulation.force('y', d3.forceY(function(d){
-        var y;
-        if (d.gross<=1000000) {y=ym;}
-        else y=d.powery;
-        return y
-    }).strength(0.2))
-    
-    .force('x', d3.forceX(function(d){
-        var x;
-        if  (d.gross<1000000)  {x=xm;}
-        else x=d.powerx;
-        return x
-    }).strength(0.2))
-    
-    simulation.force('y2', d3.forceY(function(d){
-        var y;
-        if (d.gross<=1000000) {y=h-ym;}
-        else y=d.powery;
-        return y
-    }).strength(0.2))
+    magnets.get(currentMagnetid).x=xm;
+    magnets.get(currentMagnetid).y=ym;
     
 
+    svg.select("#magnet"+currentMagnetid.toString()).remove();
+        d3.select("svg").append('rect')
+        .attr('id',"magnet"+currentMagnetid.toString())
+        .attr('x', xm)
+        .attr('y', ym)
+        .attr('width', 10)
+        .attr('height', 10)
+        .attr('stroke', 'black')
+        .attr('fill', '#69a3b2');
     
-    .force('collision', d3.forceCollide().radius(function(d) {
-        return 10
-      }).strength(1))
+    updateMagnet(currentMagnetid);
+    } 
+
+    //add a new magnet
+    else if (flag==1){
     
-    simulation.nodes(nodes).restart();
-    console.log(simulation.forceSimulation())
-    //simulation.force("x").force("y").force("collision").initialize(nodes);
+        //push to magnets' list  the caracteristics of the magnet => x,y
+    
+    currentMagnetid+=1;
+    magnets.set(currentMagnetid,{x:xm,y:ym});
+    
+    d3.select("svg").append('rect')
+        .attr('id',"magnet"+currentMagnetid.toString())
+        .attr('x', xm)
+        .attr('y', ym)
+        .attr('width', 10)
+        .attr('height', 10)
+        .attr('stroke', 'black')
+        .attr('fill', '#69a3b2');
+    //fill the mapofmagnet
+    list=[5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100]
+    updateMap(list,currentMagnetid);
+    
+    apply_magnets();
+    
+    
+    }
+    
+
+
+
+    
+    
     
     
     
@@ -82,8 +82,9 @@ let svg = d3.select("body")
 
 var flag;
 
-d3.csv("data/movies.csv", function (d) {
+d3.csv("data/movies.csv", function (d,i) {
     return {
+        id:+i,
         budget: +d.budget,
         company: d.company,
         country: d.country,
@@ -105,25 +106,23 @@ d3.csv("data/movies.csv", function (d) {
     movies = csv;
     console.log(csv)
 
-    csv.forEach(function (d, i) {
-        if (i<1000) nodes.push({name:d.genre,powerx:w/2,powery:h/2, radius:5,gross: d.gross, fill: "#" + Math.floor(Math.random() * 16777215).toString(16) });
-    });
+    nodes=csv.slice(0,1000);
+
+    initializeMap(csv);
+
+
+
     simulation = d3.forceSimulation(nodes)
     .force('x', d3.forceX(function(d){
-        return d.powerx
+        return w/2
     }))
     .force('y', d3.forceY(function(d){
-
-        return y=d.powery;
+        return h/2
         
     }))
-    
-    //.force("charge", d3.forceManyBody().strength(-20))
-    
     .force('collision', d3.forceCollide().radius(function(d) {
         return 10
       }))
-    
     .on('tick', ticked);
 
 
@@ -157,35 +156,73 @@ function ticked() {
         
       }
 
-/*
-      function clicked(){
-    
-    
-        
-    const strength = 0.2;
-    let nodes;
 
-    function force(alpha) {
-        if (flag){
-        console.log("zall");
+
+//custom force to put stuff in a box 
+function magnet_force(alpha) { 
+    
+    
+    const strength=0.2;
+
+    for (const curr_node of nodes){
+
+
+        if (mapOfMagnet.get(curr_node.id).includes(currentMagnetid)){  
         const l = alpha * strength;
-        for (const d of nodes) {
-            
-            if (d.gross<=1000000) {y=ym;}
-            else y=d.powery;
-            
-            if (d.gross<=1000000) {x=xm;}
-            else x=d.powerx;
-            
+        //curr_node.vx -= (curr_node.x -magnets.get(currentMagnetid).x) * l;
+        //curr_node.vy -= (curr_node.y -magnets.get(currentMagnetid).y) * l; 
+        curr_node.x= magnets.get(currentMagnetid).x;
+        curr_node.y=magnets.get(currentMagnetid).y;
         }
-    flag=false;
-    }
-    }
-
-    force.initialize =  _=> nodes =_ ;
-
-    return force;
 
     }
+    
+  };
 
-*/
+  
+
+  function apply_magnets(){
+    
+    simulation.alpha(0.2);
+    simulation.force(currentMagnetid.toString(),magnet_force);   
+    simulation.nodes(nodes).restart();
+    
+  }
+
+
+function updateMagnet(id){
+    
+    simulation.alpha(0.2);
+    simulation.force(id.toString(),null);
+    
+    simulation.force(id.toString(),magnet_force);   
+    simulation.nodes(nodes).restart();
+
+}
+
+
+    
+function removeMagnet(id){
+    
+    simulation.alpha(0.2);
+    simulation.force(id.toString(),null);
+    simulation.nodes(nodes).restart();
+
+}
+
+
+function initializeMap(data)
+{
+    for (const d of data){
+        
+        mapOfMagnet.set(d.id,[]);
+    }
+}
+
+function updateMap(list,magnetID){
+    for (const i of list){
+        mapOfMagnet.get(i).push(magnetID);
+    }
+}
+
+
