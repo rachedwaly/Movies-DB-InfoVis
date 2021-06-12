@@ -1,15 +1,41 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Hello, movies (D3)</title>
+        <title>Beginner mode</title>
         <script type="text/javascript" src="js/d3/d3.js"></script>
+        <script type="text/javascript" src="js/d3-cloud/build/d3.layout.cloud.js"></script>
+        <script src="https://unpkg.com/d3-simple-slider"></script>
+        <script src="https://cdn.jsdelivr.net/npm/d3-array@3"></script>
+        <script src="https://cdn.jsdelivr.net/npm/d3-time@3"></script>
+        <script src="https://cdn.jsdelivr.net/npm/d3-time-format@4"></script>
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link rel="stylesheet" href="css/cloud_style.css">
+        
     </head>
 
-    <body>
-        <script type="text/javascript" src="js/magnets.js"></script>
+    <body id="container">
 
-        <p> hello </p>
 
+        <div id="presets">
+            <select id="preset_sentence">
+                <option value="0">Select a preset sentence</option>
+                <option value="1">I want movies with <span class="italique">(gross)</span> <span class="italique">(higher than)</span> <span class="italique">(300000000)</span></option>
+                <option value="2">I'm looking for movies with the <span class="italique">(actor)</span> <span class="italique">(Emma Stones)</span></option>
+                <option value="3">I want movies from the <span class="italique">(company)</span> <span class="italique">(Warner Bros)</span></option>
+              </select>
+              <button class="w3-button w3-black" id="add_button" onclick="add()">+</button>
+
+              <a href="expert.html">Expert mode</a>
+        </div>
+        <div id="sentences">
+            <ul id="list_sentences">
+            </ul>  
+        </div>
+        
+
+        <div id="cloud_container"></div>
+
+        <script type="text/javascript" src="js/cloud.js"></script>
     </body>
 
 </html>
