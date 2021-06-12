@@ -1,5 +1,5 @@
-const h = 600;
-const w = 800;
+const h = 1000;
+const w = 1000;
 
 const maxDots = 500
 
@@ -7,33 +7,73 @@ var movies = [];
 var nodes = []
 
 var simulation;
+
 let svg = d3.select("body")
 .append("svg")
 .attr("width", w)
 .attr("height", h)
 .on('click',(event) => {
-    simulation.alpha(0.1)
+    
+
+    d3.select("svg").append('rect').attr('x',xm)
+    
+    simulation.alpha(0.2)
     var coordinates= d3.pointer(event);
     var xm = coordinates[0];
     var ym = coordinates[1];
-    console.log(xm);
-    //simulation.force('y',null);
-    //simulation.force('x',null);
+    
+    svg.select("#magnet").remove();
+    d3.select("svg").append('rect')
+    .attr('id',"magnet")
+    .attr('x', xm)
+    .attr('y', ym)
+    .attr('width', 10)
+    .attr('height', 10)
+    .attr('stroke', 'black')
+    .attr('fill', '#69a3b2');
+
+    d3.select("svg").append('rect')
+    .attr('id',"magnet")
+    .attr('x', xm)
+    .attr('y', h-ym)
+    .attr('width', 10)
+    .attr('height', 10)
+    .attr('stroke', 'black')
+    .attr('fill', '#69a3b2');
+    
+    //simulation.force('collision',null).force('x',null).force('y',null);
+    
     simulation.force('y', d3.forceY(function(d){
         var y;
         if (d.gross<=1000000) {y=ym;}
         else y=d.powery;
         return y
-    }).strength(10))
+    }).strength(0.2))
     
-    simulation.force('x', d3.forceX(function(d){
+    .force('x', d3.forceX(function(d){
         var x;
-        if (d.gross<=1000000) {x=xm;}
+        if  (d.gross<1000000)  {x=xm;}
         else x=d.powerx;
         return x
-    }).strength(10))
+    }).strength(0.2))
+    
+    simulation.force('y2', d3.forceY(function(d){
+        var y;
+        if (d.gross<=1000000) {y=h-ym;}
+        else y=d.powery;
+        return y
+    }).strength(0.2))
+    
 
+    
+    .force('collision', d3.forceCollide().radius(function(d) {
+        return 10
+      }).strength(1))
+    
     simulation.nodes(nodes).restart();
+    console.log(simulation.forceSimulation())
+    //simulation.force("x").force("y").force("collision").initialize(nodes);
+    
     
     
     
@@ -79,6 +119,7 @@ d3.csv("data/movies.csv", function (d) {
     }))
     
     //.force("charge", d3.forceManyBody().strength(-20))
+    
     .force('collision', d3.forceCollide().radius(function(d) {
         return 10
       }))
@@ -102,7 +143,9 @@ function ticked() {
           .join('circle')
           .attr('r', 5)
           .attr('fill',function(d) {
-            if (d.gross<=1000000) {return "#40F99B"}
+            if ((d.gross<=1000000) && (d.name=="Adventure")) {return "#40F99B"} //green
+            if ((d.gross<=1000000)&& (d.name!="Adventure")) {return "#FFFF00"} //yellow
+             //pink
             return "#000000"
           })
           .attr('cx', function(d) {
