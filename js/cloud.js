@@ -1,5 +1,5 @@
 const width = document.getElementById("container").offsetWidth * 0.95,
-    height = 500,
+    height = 800,
     fontFamily = "Open Sans",
     range_max = 50, // Max font size
     max_words = 300, // Max number of words display on the screen
