@@ -1,27 +1,35 @@
 let dataset = [];
 let budgetQuery = [];
 
+//d3 v5+ .get() doesn't work
 d3.csv("/data/testData.csv")
 .then(function(data) {
-    // data is now whole data set
-    // draw chart in here!
     console.log(data);
-    dataset = data;
-    opData();
-    drawChart();
+    init(data);
 })
 .catch(function(error){
    // handle error   
 })
 
-//add new col
+function init(data) {
+    dataset = data;
+    // use default input value do the query
+    opData();
+    drawChart();
+}
+
+function createM(){
+    opData();
+    drawChart();
+}
+
+//filter budget & update query array -> budgetQuery
 function opData(){
     let budgetQuerystd = document.getElementById("budget").value;
-    console.log("input value: ", budgetQuerystd);
-    console.log("input type: ", typeof budgetQuerystd);
     
+    budgetQuery = [];
     for(let i = 0; i < dataset.length; i ++){
-        if(parseInt(dataset[i].budget) > parseInt(budgetQuery)){
+        if(parseInt(dataset[i].budget) > parseInt(budgetQuerystd)){
             budgetQuery.push(1);
         }else{
             budgetQuery.push(0);
@@ -32,14 +40,14 @@ function opData(){
 
 //draw chart
 function drawChart(){
-    const width = 960;
-    const height = 960;
+    const width = 560;
+    const height = 560;
     
     // let n = 4
     // color = d3.scaleOrdinal(d3.range(n), ["transparent"].concat(d3.schemeTableau10))
     // console.log("color: ", color(0))
-    let color = ["#69a3b2", "#783920", "blue"]
-    console.log("color: ", color[0])
+    let color = ["#69a3b2", "#783920"]
+
     
     const k = width / 30;
     const x = d3.randomUniform(k, k * 4);
@@ -48,9 +56,9 @@ function drawChart(){
     let data = [];
     for(let i = 0; i < dataset.length; i ++){
         let tmp = {};
-        tmp.x = d3.randomUniform(k, k * 4);
+        tmp.x = d3.randomUniform(k, k * 4); 
         tmp.y = d3.randomUniform(k, k * 4);
-        tmp.c = 0;
+        tmp.c = 0; // 0 : nodes, 1 : magnet
         tmp.q = budgetQuery[i];
         data.push(tmp);
     }
@@ -88,27 +96,28 @@ function drawChart(){
     }
 
     
-    
     d3.select("svg")
         .on("click", clicked)
-    
-    
         
     function clicked(event) {
         console.log("clicked")
         const [x, y] = d3.pointer(event);
     
         simulation.stop();
+        // TODO:// fix: using the first row of data -> add an extra line to the db?
+        // TODO:// add more than one magnet
         data.shift();
         data.unshift({x:x, y:y, c:1, q:-1});
+        var xCenter = [x, width - x];
+        var yCenter = [y, height - y];
+
+
         console.log(data);
         // simulation.restart();
     
+        // TODO:// fix offset from the click 
         data[0].fx = x;
         data[0].fy = y;
-
-        var xCenter = [x, width - x];
-        var yCenter = [y, height - y];
 
         simulation = d3.forceSimulation(data)
         .alphaTarget(0.3) // stay hot
