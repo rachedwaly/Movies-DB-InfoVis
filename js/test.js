@@ -1,5 +1,5 @@
 const h = 600;
-const w = 1600;
+const w = 1400;
 
 const maxDots = 500
 
@@ -64,6 +64,7 @@ function dragstarted(event){
 
 function dragged(event){
     if (!isDragingMagnet) {return;}
+    if (event.x>w-5 ||  event.y >h-5 ||  event.x <5 ||  event.y <5) {return;}
     
     magnets.get(draged_magnetID).x = event.x;
     magnets.get(draged_magnetID).y = event.y;
