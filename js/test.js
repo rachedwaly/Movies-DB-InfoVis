@@ -109,7 +109,7 @@ d3.csv("data/movies.csv", function (d,i) {
     movies = csv;
     console.log(csv)
 
-    nodes=csv.slice(0,1000);
+    nodes=csv.slice(0,1500);
 
     initializeMap(csv);
 
@@ -212,17 +212,11 @@ function apply_magnets(){
             if (mapOfMagnet.get(d.id).includes(z)){return magnets.get(z).y; }
             else return d.y;
         }).strength(1));
-
+        
 
         
-    }
-
-
-    
-    
+    }  
   }
-
-
 
 function updateMagnet(id,xm,ym){
     magnets.get(id).x=xm;
@@ -260,5 +254,3 @@ function updateMap(list,magnetID){
         mapOfMagnet.get(i).push(magnetID);
     }
 }
-
-
