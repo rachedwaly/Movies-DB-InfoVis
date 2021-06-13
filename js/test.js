@@ -40,7 +40,7 @@ let svg = d3.select("body")
         .attr('stroke', 'black')
         .attr('fill', '#69a3b2');
     
-    updateMagnet(currentMagnetid);
+    updateMagnet(currentMagnetid,xm,ym);
     } 
 
     //add a new magnet
@@ -62,13 +62,17 @@ let svg = d3.select("body")
     //fill the mapofmagnet
     list=[5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100]
     updateMap(list,currentMagnetid);
+
     
-    apply_magnets();
+    flag=0;
+
+
     
     
     }
     
-
+    resetMagnets();
+    apply_magnets();
 
 
     
@@ -162,17 +166,17 @@ function ticked() {
 function magnet_force(alpha) { 
     
     
-    const strength=0.2;
+    const strength=0.5;
 
     for (const curr_node of nodes){
 
 
         if (mapOfMagnet.get(curr_node.id).includes(currentMagnetid)){  
         const l = alpha * strength;
-        //curr_node.vx -= (curr_node.x -magnets.get(currentMagnetid).x) * l;
-        //curr_node.vy -= (curr_node.y -magnets.get(currentMagnetid).y) * l; 
-        curr_node.x= magnets.get(currentMagnetid).x;
-        curr_node.y=magnets.get(currentMagnetid).y;
+        curr_node.vx -= (curr_node.x -magnets.get(currrentMagnetForce).x) * l;
+        curr_node.vy -= (curr_node.y -magnets.get(currrentMagnetForce).y) * l; 
+        //curr_node.x= magnets.get(currrentMagnetForce).x;
+        //curr_node.y=magnets.get(currrentMagnetForce).y;
         }
 
     }
@@ -180,41 +184,73 @@ function magnet_force(alpha) {
   };
 
   
-
+/*
   function apply_magnets(){
     
     simulation.alpha(0.2);
-    simulation.force(currentMagnetid.toString(),magnet_force);   
+    for (var id=0;id<magnets.size;id++){
+        currrentMagnetForce=id;
+        simulation.force(currentMagnetid.toString(),magnet_force);   
+    }
     simulation.nodes(nodes).restart();
+  }
+*/
+
+function apply_magnets(){
+    
+    simulation.alpha(0.2);
+    simulation.nodes(nodes).restart();
+
+    for (var z=0;z<magnets.size;z=z+1){
+        
+        console.log(z);
+        
+        simulation.force(z.toString()+"x",d3.forceX(function (d){
+            if (mapOfMagnet.get(d.id).includes(z)){return magnets.get(z).x; }
+            else return d.x;
+        }).strength(1));
+        
+        simulation.force(z.toString()+"y",d3.forceY(function (d){
+            if (mapOfMagnet.get(d.id).includes(z)){return magnets.get(z).y; }
+            else return d.y;
+        }).strength(1));
+        
+    }
+
+
+    
     
   }
 
 
-function updateMagnet(id){
-    
-    simulation.alpha(0.2);
-    simulation.force(id.toString(),null);
-    
-    simulation.force(id.toString(),magnet_force);   
-    simulation.nodes(nodes).restart();
+
+function updateMagnet(id,xm,ym){
+    magnets.get(id).x=xm;
+    magnets.get(id).y=ym;
 
 }
 
 
+function resetMagnets(){
+    
+    for (var id=0;id<magnets.size;id++){
+        simulation.force(id.toString()+"x",null);
+        simulation.force(id.toString()+"y",null);
+    }
+    
+}
+
     
 function removeMagnet(id){
-    
     simulation.alpha(0.2);
     simulation.force(id.toString(),null);
     simulation.nodes(nodes).restart();
-
 }
 
 
 function initializeMap(data)
 {
     for (const d of data){
-        
         mapOfMagnet.set(d.id,[]);
     }
 }
