@@ -21,8 +21,8 @@ let svg = d3.select("body")
     var coordinates= d3.pointer(event);
     var xm = coordinates[0];
     var ym = coordinates[1];
-    //adjust magnets position
     
+    //adjust magnets position
     if (flag==0){
     
     
@@ -66,10 +66,9 @@ let svg = d3.select("body")
     
     flag=0;
 
-
-    
-    
     }
+    
+    
     
     resetMagnets();
     apply_magnets();
@@ -204,7 +203,6 @@ function apply_magnets(){
     for (var z=0;z<magnets.size;z=z+1){
         
         console.log(z);
-        
         simulation.force(z.toString()+"x",d3.forceX(function (d){
             if (mapOfMagnet.get(d.id).includes(z)){return magnets.get(z).x; }
             else return d.x;
@@ -214,6 +212,8 @@ function apply_magnets(){
             if (mapOfMagnet.get(d.id).includes(z)){return magnets.get(z).y; }
             else return d.y;
         }).strength(1));
+
+
         
     }
 
