@@ -14,10 +14,19 @@ var currentMagnetid = -1; //will be use to add a certain magnet inside the svg
 var mapOfMagnet = new Map();
 var list;
 
-let svg = d3.select("body")
+let container=d3.select("body").append("div").attr('id',"container");
+console.log(container);
+
+let svg = container
     .append("svg")
     .attr("width", w)
     .attr("height", h);
+
+
+var tooltip=d3.select('#container').append("div")
+.style("position", "fixed")
+.style("visibility", "hidden")
+.text("I'm a circle!");
 
 
 svg.on('click', (event) => {
@@ -156,8 +165,12 @@ function ticked() {
         })
         .attr('cy', function (d) {
             return d.y
-        });
-
+        })
+        
+        .on("mouseover", function(){return tooltip.style("visibility", "visible");})
+        .on("mousemove", function(d){return tooltip.style("top", d.x+"px").style("left",d.y+"px");})
+        .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+        
 }
 
 
