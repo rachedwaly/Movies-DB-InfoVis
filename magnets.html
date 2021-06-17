@@ -15,20 +15,48 @@
         
         <div id="first_filter">
             First Filter: limited to 1000 nodes
-            <div id="slider_view"></div>
+            <div>
+                <select id="selector1">
+                    <option>Select a Category</option>
+                    <option>genre</option>
+                    <option>country</option>
+                    <option>budget</option>
+
+                    <option>gross</option>
+                    <option>runtime</option>
+                    <option>score</option>
+
+                    <option>votes</option>
+                    <option>actor</option>
+                    <option>director</option>
+                    <option>writer</option>
+                </select>
+                <button class="w3-button w3-black" id="filter1_button" onclick="updateSub1()">+</button>
+                <div id="container1"></div>
+            </div>
         </div>
         
         <button id="next" onclick="createMap()" disabled>create a magnet map with 0 nodes</button>
         
         <div id="magnets_container"></div>
         
-        <div id="second_filter">
+        <div id="second_filter" >
             Second Filter: create magnets
-            <!-- <br>
-            <label>Country</label><input id="country" >
-            <label>Company</label><input id="company" >
-            <label>Director</label><input id="director" >
-            <label>Genre</label><input id="genre" > -->
+            <div>
+                <select id="selector2">
+                    <option value="0">Select a Category</option>
+                    <option value="1">number</option>
+                    <option value="2">name</option>
+                    <option value="3">selector</option>
+                  </select>
+                <button class="w3-button w3-black" id="add_button" onclick="add()">+</button>
+            </div>
+            
+            <div id="sentences">
+                <ul id="list_sentences">
+                </ul>  
+            </div>
+            
         </div>
         <button id="createMagnets" onclick="createMag()">Create Magnets</button>        
 

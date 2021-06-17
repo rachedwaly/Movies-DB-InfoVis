@@ -77,19 +77,36 @@ d3.csv("data/movies.csv", function(d) {
     words.length = max_words; // Print only max_words words
     // console.log(csv[20]);
 
-    
+    generalSelect();
 });
+function generalSelect(){
+    var li = d3.select("#first_filter").append("li")
+                        .attr("class", "w3-display-container")
+                        .attr("id", "allInOne");
+            
+    var typ = li.append("select")
+                .attr("id", "select1")
+                .attr("class", "type")
+                .attr("height", 28)
+                .on('change', () => updateSub1({"li": li, "type": typ}))
+            
+            // Add options into the selector
+    typ.selectAll("option")
+                .data(["select a category", "genre", "country", "budget", "gross", "runtime", "score", "votes", "actor", "director", "writer"])
+                .enter()
+                .append("option")
+                .text(function(d){return d;})
+                .attr("value", function(d) {return d;});
 
+}
+function updateSub1(list_opt){
+    var selector = list_opt["type"]
 
-//first filter
-function updateSub1(){
-    let select1 = d3.select("#selector1");
-    let li = d3.select("#container_1");
-    let list_opt = {"li": li, "type": select1};
+    let select1 = selector.property("value");
 
-    switch (select1.property("value")) {
+    switch (select1) {
         case "budget": case "gross": case "runtime": case "score": case "votes":
-            updateSlider1(list_opt);
+            updateSlider(list_opt);
             break;
         case "genre": case "country":
             updateDblSelectList(list_opt)
@@ -101,11 +118,116 @@ function updateSub1(){
     }
 }
 
+// function showCreateMag(){   
+//     //slider class 
+//     var li = d3.select("#second_filter").append("li")
+//                         .attr("class", "w3-display-container")
+//                         .attr("id", "li1");
 
-// second filter below
+//     // Create the type selector (budget, gross, runtime,...)
+//     var typ = li.append("select")
+//         .attr("class", "type")
+//         .on('change', () => updateSlider({"li": li, "type": typ}))
+//         // .on('change', () => updateSliderView(typ))
+
+//     // Add options into the selector
+//     typ.selectAll("option")
+//     .data(["budget", "gross", "runtime", "score", "votes"])
+//     .enter()
+//     .append("option")
+//     .text(function(d){return d;})
+//     .attr("value", function(d) {return d;});
+
+//     //double select class
+//     var li2 = d3.select("#second_filter").append("li")
+//                         .attr("class", "w3-display-container")
+//                         .attr("id", "li2");
+            
+
+//             // Create the type selector (actor, director, writter)
+//     var typ2 = li2.append("select")
+//                 .attr("class", "type")
+//                 .attr("height", 28)
+//                 .on('change', () => updateDblSelectList({"li": li2, "type": typ2}))
+            
+//             // Add options into the selector
+//     typ2.selectAll("option")
+//                 .data(["genre", "country"])
+//                 .enter()
+//                 .append("option")
+//                 .text(function(d){return d;})
+//                 .attr("value", function(d) {return d;});
+    
+//     var li3 = d3.select("#second_filter").append("li")
+//                         .attr("class", "w3-display-container")
+//                         .attr("id", "li3");
+            
+
+//             // Create the type selector (actor, director, writter)
+//     var typ3 = li3.append("select")
+//                 .attr("id", "mag_select")
+//                 .attr("class", "type")
+//                 .attr("height", 28)
+//                 .on('change', () => updateNamelist({"li": li3, "type": typ3}))
+            
+//             // Add options into the selector
+//     typ3.selectAll("option")
+//                 .data(["actor", "director", "writer"])
+//                 .enter()
+//                 .append("option")
+//                 .text(function(d){return d;})
+//                 .attr("value", function(d) {return d;});
+
+// }
+// function showCreateMag(){
+//     var li = d3.select("#second_filter").append("li")
+//                         .attr("class", "w3-display-container")
+//                         .attr("id", "threeLines");
+            
+
+//             // Create the type selector (actor, director, writter)
+//             var typ = li.append("select")
+//                 .attr("id", "mag_select")
+//                 .attr("class", "type")
+//                 .attr("height", 28)
+//                 .on('change', () => updateNamelist(list_options[li.property("id")]))
+            
+//             // Add options into the selector
+//             typ.selectAll("option")
+//                 .data(["actor", "director", "writer"])
+//                 .enter()
+//                 .append("option")
+//                 .text(function(d){return d;})
+//                 .attr("value", function(d) {return d;});
+            
+//             var search_div = li.append("div")
+
+//             var namelist = search_div.append("input")
+//                            .attr("type", "text")
+//                            .attr("placeholder", "Enter the name...")
+//                            .on("click", function (e) { d3.selectAll(".autocomp_box").style("display", "none"); 
+//                                                         li.select(".autocomp_box").style("display", "block"); 
+//                                                         autocomp(e, autocomp_box, list_options[li.property("id")]);
+//                         })
+//                            .on("keyup", (e) => autocomp(e, autocomp_box, list_options[li.property("id")]))
+            
+//             var autocomp_box = search_div.append("div")
+//                                         .attr("class", "autocomp_box")
+//                                         .style("display", "none")
+
+//             li.append("span")
+//                 .attr("class", "w3-button w3-display-right")
+//                 .on("click", function() { li.style("display", "none"); delete list_options[li.property("id")];})
+//                 .text("x")
+
+//             // Store new selectors
+//             list_options[ID.toString()] = {"li": li, "type": typ, "name": actorsList};
+// }
+
 function checkVal(val1, val2){
     let nextbtn = document.getElementById("next");
     let select1 = d3.select("#select1").property("value");
+    
 
     if(val1 > val2){
         // console.log("val1 > val2");
@@ -135,7 +257,7 @@ function checkVal(val1, val2){
                 break;
             case "score":
                 movies.forEach(function(d,i) {
-                    if(d.score >= val1 && d.score <= val2)
+                    if(d.votes >= val1 && d.votes <= val2)
                         data.push(d);
                 })
                  
@@ -164,124 +286,54 @@ function checkVal(val1, val2){
     
 }
 
+
+
+function showCreateMag(){
+    var li = d3.select("#second_filter").append("li")
+                        .attr("class", "w3-display-container")
+                        .attr("id", ID);
+            
+
+            // Create the type selector (actor, director, writter)
+            var typ = li.append("select")
+                .attr("id", "mag_select")
+                .attr("class", "type")
+                .attr("height", 28)
+                .on('change', () => updateNamelist(list_options[li.property("id")]))
+            
+            // Add options into the selector
+            typ.selectAll("option")
+                .data(["actor", "director", "writer"])
+                .enter()
+                .append("option")
+                .text(function(d){return d;})
+                .attr("value", function(d) {return d;});
+            
+            var search_div = li.append("div")
+
+            var namelist = search_div.append("input")
+                           .attr("type", "text")
+                           .attr("placeholder", "Enter the name...")
+                           .on("click", function (e) { d3.selectAll(".autocomp_box").style("display", "none"); 
+                                                        li.select(".autocomp_box").style("display", "block"); 
+                                                        autocomp(e, autocomp_box, list_options[li.property("id")]);
+                        })
+                           .on("keyup", (e) => autocomp(e, autocomp_box, list_options[li.property("id")]))
+            
+            var autocomp_box = search_div.append("div")
+                                        .attr("class", "autocomp_box")
+                                        .style("display", "none")
+
+            li.append("span")
+                .attr("class", "w3-button w3-display-right")
+                .on("click", function() { li.style("display", "none"); delete list_options[li.property("id")];})
+                .text("x")
+
+            // Store new selectors
+            list_options[ID.toString()] = {"li": li, "type": typ, "name": actorsList};
+}
+
 function updateSlider(list_opt) {
-    // Selector for the type of slider (budget/gross/...)
-    var selector = list_opt["type"]
-    // li component
-    var li = list_opt["li"]
-
-    // Value of the type selector
-    console.log(selector.property("value"))
-    let value = selector.property("value");
-
-    // Remove the previous svg component (for the slider)
-    if(list_opt["slider"]) list_opt["slider"].remove();
-    //li.selectAll('svg').remove();
-
-    // Create a new svg for the new slider
-    let new_slider_component = li.append('svg')
-            .attr('width', 700)
-            .attr('height', 70)
-
-    // Uodate the dict
-    list_opt["slider"] = new_slider_component;
-
-    // Create the new slider depending on the type value
-    switch (value) {
-        case "budget":
-            let minBudget = d3.min(movies, d => d.budget);
-            let maxBudget = d3.max(movies, d => d.budget);
-        
-            var new_slider = d3.sliderHorizontal()
-                .min(minBudget)
-                .max(maxBudget)
-                .step(1000000)
-                .ticks(5)
-                .width(500)
-                .displayValue(true)
-                .on('onchange', (val) => {
-                    list_opt["slider_value"] = val;
-                    updateWeights();
-                })
-                .on('end', function() { createMagOnMap()});
-            break;
-        case "gross":
-            let minGross = 0;
-            let maxGross = Math.ceil(d3.max(movies, d => d.gross) / 1000000) * 1000000;
-
-            var new_slider = d3.sliderHorizontal()
-                .min(minGross)
-                .max(maxGross)
-                .step(1000000)
-                .ticks(5)
-                .width(500)
-                .displayValue(true)
-                .on('onchange', (val) => {
-                    list_opt["slider_value"] = val;
-                    updateWeights();
-                })
-                .on('end', function() { createMagOnMap()});
-            break;
-        case "runtime":
-            let minRuntime = d3.min(movies, d => d.runtime);
-            let maxRuntime = d3.max(movies, d => d.runtime);
-        
-            var new_slider = d3.sliderHorizontal()
-                .min(minRuntime)
-                .max(maxRuntime)
-                .step(1)
-                .width(500)
-                .displayValue(true)
-                .on('onchange', (val) => {
-                    list_opt["slider_value"] = val;
-                    updateWeights();
-                })
-                .on('end', function() { createMagOnMap()});
-            break;
-        case "score":
-            let minScore = 0;
-            let maxScore = 10;
-        
-            var new_slider = d3.sliderHorizontal()
-                .min(minScore)
-                .max(maxScore)
-                .step(1)
-                .width(500)
-                .displayValue(true)
-                .on('onchange', (val) => {
-                    list_opt["slider_value"] = val;
-                    updateWeights();
-                })
-                .on('end', function() { createMagOnMap()});
-            break;
-        case "votes":
-            let minVotes = 0;
-            let maxVotes = Math.ceil(d3.max(movies, d => d.votes) / 100000) * 100000;
-        
-            var new_slider = d3.sliderHorizontal()
-                .min(minVotes)
-                .max(maxVotes)
-                .step(1000)
-                .width(500)
-                .ticks(5)
-                .displayValue(true)
-                .on('onchange', (val) => {
-                    list_opt["slider_value"] = val;
-                    updateWeights();
-                })
-                .on('end', function() { createMagOnMap()});
-            break;
-        default:
-    }
-
-    // Add the slider into the svg component
-    new_slider_component.append('g')
-                        .attr('transform', 'translate(30,30)')
-                        .call(new_slider);
-
-};
-
-function updateSlider1(list_opt) {
     // Selector for the type of slider (budget/gross/...)
     var selector = list_opt["type"]
 
@@ -597,7 +649,7 @@ function updateWeights() {
     d3.map(movies, function(d){d.filter = 0;})
 
     console.log(movies)
-    // console.log(selected_movies)
+    console.log(selected_movies)
     console.log("inside");
     for (var key in list_options){
         var li_param = list_options[key];
@@ -676,6 +728,39 @@ function updateWeights() {
     }
 }
 
+function createMap(){ 
+    console.log(movies1000);
+    alert("createmap")
+    showCreateMag();
+}
+
+function createMag(){ 
+    let magSel = d3.select("#mag_select").property("value");
+    let magInput = d3.select("input").property("value");
+    
+    movies1000.forEach(function(d,i) {
+        switch(magSel){
+            case "director" :
+                if(d.director === magInput){
+                attlist.push(d.id);
+                break;
+            }
+            case "actor" :
+                if(d.actor === magInput){
+                attlist.push(d.id);
+                break;
+            }
+
+        }
+    });
+
+    console.log(attlist);
+    alert("createmag")
+}
+
+function createMagOnMap(){
+    alert("create a mag");
+}
 
 function add() {
     console.log("OK");
@@ -688,18 +773,19 @@ function add() {
             // Create a new li
             var li = d3.select("#list_sentences").append("li")
                         .attr("class", "w3-display-container")
-                        .attr("id", ID);
+                        .attr("id", ID)
+                        .text("I want movies with ");
         
             // Create the type selector (budget, gross, runtime,...)
             var typ = li.append("select")
                 .attr("class", "type")
                 .on('change', function() { updateSlider(list_options[li.property("id")]); 
                                         updateWeights();
-                                        })
+                                        createMagOnMap()})
             
             // Add options into the selector
             typ.selectAll("option")
-                .data(["Select a Category","budget", "gross", "runtime", "score", "votes"])
+                .data(["budget", "gross", "runtime", "score", "votes"])
                 .enter()
                 .append("option")
                 .text(function(d){return d;})
@@ -708,7 +794,7 @@ function add() {
             // Create the order selector (higher than, lower than, equals to)
             var order = li.append("select")
                 .on('change', function() { updateWeights();
-                    createMagOnMap();})
+                                        drawcloud(selected_movies, range_max);})
                 
             order.selectAll("option")
                 .data(["higher than", "equals to", "lower than"])
@@ -719,39 +805,50 @@ function add() {
                
                 
             // Initialize the first slider
+            let minBudget = d3.min(movies, d => d.budget);
+            let maxBudget = d3.max(movies, d => d.budget);
+        
+            // Create the default slider
+            var budget_slider = d3.sliderHorizontal()
+                .min(minBudget)
+                .max(maxBudget)
+                .step(1000000)
+                .ticks(5)
+                .width(500)
+                .displayValue(true)
+                .on('onchange', (val) => {
+                    list_options[li.property("id")]["slider_value"] = val;
+                    updateWeights();
+                })
+                .on('end', function() { drawcloud(selected_movies, range_max)});
 
-            let rightMenu = li.append("span")
-                                .attr("class", "w3-button w3-display-right");
+            // Create the svg component for the slider
+            var slider_component = li.append('svg')
+                .attr('width', 700)
+                .attr('height', 70)
+
+            // Add the slider into the component
+            slider_component.append('g')
+                .attr('transform', 'translate(30,30)')
+                .call(budget_slider);
             
-
-                // Create a new svg for the new slider
-            let new_magnets = rightMenu.append('svg')
-                .attr('width', 50)
-                .attr('height', 30)
-                        
-
-                new_magnets.append("circle")
-                    .attr('cx', '10px')
-                    .attr('cy', '10px')
-                    .attr('r','10px')
-                    .style('fill', 'red')
-                    .on("click", function() { createMagOnMap(); })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
-
-                rightMenu.append("span")
+            li.append("span")
                 .attr("class", "w3-button w3-display-right")
                 .on("click", function() { li.style("display", "none"); 
                                         delete list_options[li.property("id")]; 
-                                        ; })
+                                        drawcloud(selected_movies, range_max); })
                 .text("x")
+
             // Store new selectors
-            list_options[ID.toString()] = {"value": select_value, "li": li, "type": typ, "order": order};
+            list_options[ID.toString()] = {"value": select_value, "li": li, "type": typ, "order": order, "slider": slider_component, "slider_value": budget_slider.value()};
             console.log(list_options[ID.toString()])
             break;
         case "2":
             // Create a new li
             var li = d3.select("#list_sentences").append("li")
                         .attr("class", "w3-display-container")
-                        .attr("id", ID);
+                        .attr("id", ID)
+                        .text("I'm looking for movies with the ");
             
 
             // Create the type selector (actor, director, writter)
@@ -762,13 +859,26 @@ function add() {
             
             // Add options into the selector
             typ.selectAll("option")
-                .data(["Select a Category", "actor", "director", "writer"])
+                .data(["actor", "director", "writer"])
                 .enter()
                 .append("option")
                 .text(function(d){return d;})
                 .attr("value", function(d) {return d;});
             
+            var search_div = li.append("div")
+
+            var namelist = search_div.append("input")
+                           .attr("type", "text")
+                           .attr("placeholder", "Enter the name...")
+                           .on("click", function (e) { d3.selectAll(".autocomp_box").style("display", "none"); 
+                                                        li.select(".autocomp_box").style("display", "block"); 
+                                                        autocomp(e, autocomp_box, list_options[li.property("id")]);
+                        })
+                           .on("keyup", (e) => autocomp(e, autocomp_box, list_options[li.property("id")]))
             
+            var autocomp_box = search_div.append("div")
+                                        .attr("class", "autocomp_box")
+                                        .style("display", "none")
 
             li.append("span")
                 .attr("class", "w3-button w3-display-right")
@@ -782,7 +892,8 @@ function add() {
             // Create a new li
             var li = d3.select("#list_sentences").append("li")
                         .attr("class", "w3-display-container")
-                        .attr("id", ID);
+                        .attr("id", ID)
+                        .text("I want movies from the ");
            
 
            // Create the type selector (actor, director, writter)
@@ -793,12 +904,26 @@ function add() {
            
            // Add options into the selector
            typ.selectAll("option")
-               .data(["Select a Category", "company", "country"])
+               .data(["company", "country"])
                .enter()
                .append("option")
                .text(function(d){return d;})
                .attr("value", function(d) {return d;});
            
+           var search_div = li.append("div")
+
+           var namelist = search_div.append("input")
+                           .attr("type", "text")
+                           .attr("placeholder", "Enter the name...")
+                           .on("click", function (e) { d3.selectAll(".autocomp_box").style("display", "none"); 
+                                                        li.select(".autocomp_box").style("display", "block"); 
+                                                        autocomp(e, autocomp_box, list_options[li.property("id")]);
+                            })
+                            .on("keyup", (e) => autocomp(e, autocomp_box, list_options[li.property("id")]))
+           
+           var autocomp_box = search_div.append("div")
+                                       .attr("class", "autocomp_box")
+                                       .style("display", "none")
 
            li.append("span")
                .attr("class", "w3-button w3-display-right")
@@ -812,10 +937,10 @@ function add() {
     // Increment the id variable
     ID += 1
               
-    
+        /*var options = dropDown.selectAll("option")
+            .data(d3.map(movies, function(d){return d.company;}).values())
+            .enter()
+            .append("option")
+            .text(function(d){return d;})
+            .attr("value",function(d){return d;});*/
 };
-
-
-function createMagOnMap(){
-    alert("create a mag");
-}
