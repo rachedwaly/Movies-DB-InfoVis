@@ -2,30 +2,30 @@ const width = document.getElementById("container").offsetWidth * 0.95,
     height = 800,
     fontFamily = "Open Sans",
     range_max = 50, // Max font size
-    max_words = 1000, // Max number of words display on the screen
+
+    max_nodes = 1000, // Max number of words display on the screen
     fillScale = d3.scaleOrdinal(d3.schemeCategory10); // Build a discrete scale of 10 different colors
 
-var words = []; // All possible words
+let n = 4
+color = d3.scaleOrdinal(d3.range(n), ["transparent"].concat(d3.schemeTableau10))
 
 // Filter variables
 var ID = 0;
-var list_options = [];
+var list_options = [];  //used by second filter
 
 // Data lists
 var movies = [];
-let movies1000 = [];
-let attlist = [];
+let movies1000 = [];    //after first filter
+let moviesAtt = [];     //attracted movies id
 
-//TODO update list from movies to movies1000
+//TODO: update list from movies to movies1000
 var actorsList = [];
 var directorList = []
 var writerList = []
 var companyList = []
 var countryList = []
 var genreList = []
-
-
-let i = 0;
+let i = 0; //read id 
 
 d3.csv("data/movies.csv", function(d) {
     return {
@@ -44,12 +44,11 @@ d3.csv("data/movies.csv", function(d) {
         star: d.star,
         votes: +d.votes,
         writer: d.writer,
-        year: +d.year
+        year: +d.year,
     };
 }).then(function(csv) {    
     movies = csv;
     csv.forEach(function(d,i) {
-        words.push({"text": d.name, "size": d.runtime});
         actorsList.push(d.star);
         directorList.push(d.director);
         writerList.push(d.writer);
@@ -74,317 +73,34 @@ d3.csv("data/movies.csv", function(d) {
     countryList.sort();
     genreList.sort();
 
-    words.length = max_words; // Print only max_words words
-    // console.log(csv[20]);
-
-    generalSelect();
 });
-function generalSelect(){
-    var li = d3.select("#first_filter").append("li")
-                        .attr("class", "w3-display-container")
-                        .attr("id", "allInOne");
-            
-    var typ = li.append("select")
-                .attr("id", "select1")
-                .attr("class", "type")
-                .attr("height", 28)
-                .on('change', () => updateSub1({"li": li, "type": typ}))
-            
-            // Add options into the selector
-    typ.selectAll("option")
-                .data(["genre", "country", "budget", "gross", "runtime", "score", "votes", "actor", "director", "writer"])
-                .enter()
-                .append("option")
-                .text(function(d){return d;})
-                .attr("value", function(d) {return d;});
 
-}
-function updateSub1(list_opt){
-    var selector = list_opt["type"]
 
-    let select1 = selector.property("value");
+//first filter
+function filter1(){
+    let select1 = d3.select("#selector1");
+    let container = d3.select("#filter_container");
+    let list_opt = {"container": container, "type": select1};
 
-    switch (select1) {
+    switch (select1.property("value")) {
         case "budget": case "gross": case "runtime": case "score": case "votes":
-            updateSlider(list_opt);
+            updateSlider1(list_opt);
             break;
         case "genre": case "country":
             updateDblSelectList(list_opt)
             break;
-        case "actor": case "director": case "writer":
-            updateNamelist(list_opt)
         default:
             break;
     }
 }
-function sliders(){ 
-    
-    var li = d3.select("#first_filter").append("li")
-                        .attr("class", "w3-display-container")
-                        .attr("id", ID)
-                        .text("Filter");
+function updateSlider1(list_opt) {
+   
+    let selector = list_opt["type"]
 
-    // Create the type selector (budget, gross, runtime,...)
-    var typ = li.append("select")
-        .attr("class", "type")
-        .on('change', () => updateSlider(list_options[li.property("id")]))
-        // .on('change', () => updateSliderView(typ))
+    let container = list_opt["container"]
+    container.selectAll('li').remove();
 
-    // Add options into the selector
-    typ.selectAll("option")
-    .data(["budget", "gross", "runtime", "score", "votes"])
-    .enter()
-    .append("option")
-    .text(function(d){return d;})
-    .attr("value", function(d) {return d;});
-
-
-    li.append("text")
-    .text("from: ")
-
-    // Initialize the first slider
-    let minBudget = d3.min(movies, d => d.budget);
-    let maxBudget = d3.max(movies, d => d.budget);
-
-    let val1 = 0, val2 = 0;
-    // Create the default slider
-    var budget_slider = d3.sliderHorizontal()
-        .min(minBudget)
-        .max(maxBudget)
-        .step(1000000)
-        .ticks(5)
-        .width(500)
-        .displayValue(true)
-        .on('onchange', (val) => {
-            val1 = val;
-            checkVal(val1, val2);
-    });
-    // Create the svg component for the slider
-    var slider_component1 = li.append('svg')
-    .attr('width', 700)
-    .attr('height', 70)
-
-    // Add the slider into the component
-    slider_component1.append('g')
-    .attr('transform', 'translate(30,30)')
-    .call(budget_slider);
-
-    li.append("text")
-    .text("to: ")
-
-    // Create the default slider
-    var budget_slider2 = d3.sliderHorizontal()
-        .min(minBudget)
-        .max(maxBudget)
-        .step(1000000)
-        .ticks(5)
-        .width(500)
-        .displayValue(true)
-        .on('onchange', (val) => {
-            val2 = val;
-            checkVal(val1, val2);
-    });
-    // Create the svg component for the slider
-    var slider_component2 = li.append('svg')
-    .attr('width', 700)
-    .attr('height', 70)
-
-    // Add the slider into the component
-    slider_component2.append('g')
-    .attr('transform', 'translate(30,30)')
-    .call(budget_slider2);
-
-    // Store new selectors
-    list_options[ID.toString()] = {"li": li, "type": typ, "slider": [slider_component1, slider_component2]};
-
-    
-
-}
-function dblSelect(){
-    var li = d3.select("#first_filter").append("li")
-                        .attr("class", "w3-display-container")
-                        .attr("id", ID);
-            
-
-            // Create the type selector (actor, director, writter)
-            var typ = li.append("select")
-                .attr("id", "mag_select")
-                .attr("class", "type")
-                .attr("height", 28)
-                .on('change', () => updateDblSelectList(list_options[li.property("id")]))
-            
-            // Add options into the selector
-            typ.selectAll("option")
-                .data(["genre", "country"])
-                .enter()
-                .append("option")
-                .text(function(d){return d;})
-                .attr("value", function(d) {return d;});
-            
-            
-            // Store new selectors
-            list_options[ID.toString()] = {"li": li, "type": typ, "name": actorsList};
-}
-function showCreateMag(){
-    var li = d3.select("#second_filter").append("li")
-                        .attr("class", "w3-display-container")
-                        .attr("id", ID);
-            
-
-            // Create the type selector (actor, director, writter)
-            var typ = li.append("select")
-                .attr("id", "mag_select")
-                .attr("class", "type")
-                .attr("height", 28)
-                .on('change', () => updateNamelist(list_options[li.property("id")]))
-            
-            // Add options into the selector
-            typ.selectAll("option")
-                .data(["actor", "director", "writer"])
-                .enter()
-                .append("option")
-                .text(function(d){return d;})
-                .attr("value", function(d) {return d;});
-            
-            var search_div = li.append("div")
-
-            var namelist = search_div.append("input")
-                           .attr("type", "text")
-                           .attr("placeholder", "Enter the name...")
-                           .on("click", function (e) { d3.selectAll(".autocomp_box").style("display", "none"); 
-                                                        li.select(".autocomp_box").style("display", "block"); 
-                                                        autocomp(e, autocomp_box, list_options[li.property("id")]);
-                        })
-                           .on("keyup", (e) => autocomp(e, autocomp_box, list_options[li.property("id")]))
-            
-            var autocomp_box = search_div.append("div")
-                                        .attr("class", "autocomp_box")
-                                        .style("display", "none")
-
-            li.append("span")
-                .attr("class", "w3-button w3-display-right")
-                .on("click", function() { li.style("display", "none"); delete list_options[li.property("id")];})
-                .text("x")
-
-            // Store new selectors
-            list_options[ID.toString()] = {"li": li, "type": typ, "name": actorsList};
-}
-
-function checkVal(val1, val2){
-    let nextbtn = document.getElementById("next");
-
-    if(val1 > val2){
-        // console.log("val1 > val2");
-        nextbtn.disabled = true;
-        return null;
-    } else{
-        let data = [];
-        for(let i = 0; i < movies.length; i++){
-            if(movies[i].budget >= val1 && movies[i].budget <= val2){
-                data.push(movies[i]);
-            }
-        }
-
-        if(data.length < max_words){
-            nextbtn.removeAttribute("disabled");
-            nextbtn.innerHTML = "create a magnet map with " + data.length + " nodes";
-        }else{
-            nextbtn.disabled = true;
-            nextbtn.innerHTML = "can't create a magnet map with " + data.length + " nodes";
-        }
-
-        movies1000 = data;
-    }
-    
-    
-}
-
-function createMap(){ 
-    console.log(movies1000);
-    alert("createmap")
-    showCreateMag();
-}
-
-function createMag(){ 
-    let magSel = d3.select("#mag_select").property("value");
-    let magInput = d3.select("input").property("value");
-    
-    movies1000.forEach(function(d,i) {
-        switch(magSel){
-            case "director" :
-                if(d.director === magInput){
-                attlist.push(d.id);
-                break;
-            }
-            case "actor" :
-                if(d.actor === magInput){
-                attlist.push(d.id);
-                break;
-            }
-
-        }
-    });
-
-    console.log(attlist);
-    alert("createmag")
-}
-
-function showCreateMag(){
-    var li = d3.select("#second_filter").append("li")
-                        .attr("class", "w3-display-container")
-                        .attr("id", ID);
-            
-
-            // Create the type selector (actor, director, writter)
-            var typ = li.append("select")
-                .attr("id", "mag_select")
-                .attr("class", "type")
-                .attr("height", 28)
-                .on('change', () => updateNamelist(list_options[li.property("id")]))
-            
-            // Add options into the selector
-            typ.selectAll("option")
-                .data(["actor", "director", "writer"])
-                .enter()
-                .append("option")
-                .text(function(d){return d;})
-                .attr("value", function(d) {return d;});
-            
-            var search_div = li.append("div")
-
-            var namelist = search_div.append("input")
-                           .attr("type", "text")
-                           .attr("placeholder", "Enter the name...")
-                           .on("click", function (e) { d3.selectAll(".autocomp_box").style("display", "none"); 
-                                                        li.select(".autocomp_box").style("display", "block"); 
-                                                        autocomp(e, autocomp_box, list_options[li.property("id")]);
-                        })
-                           .on("keyup", (e) => autocomp(e, autocomp_box, list_options[li.property("id")]))
-            
-            var autocomp_box = search_div.append("div")
-                                        .attr("class", "autocomp_box")
-                                        .style("display", "none")
-
-            li.append("span")
-                .attr("class", "w3-button w3-display-right")
-                .on("click", function() { li.style("display", "none"); delete list_options[li.property("id")];})
-                .text("x")
-
-            // Store new selectors
-            list_options[ID.toString()] = {"li": li, "type": typ, "name": actorsList};
-}
-
-function updateSlider(list_opt) {
-    // Selector for the type of slider (budget/gross/...)
-    var selector = list_opt["type"]
-
-    var lig = list_opt["li"]
-    lig.selectAll('span').remove();
-
-    var li = lig.append("span")
-
-    // li.selectAll('text').remove();
-    // li.selectAll('svg').remove();
+    var li = container.append("li")
 
     // Value of the type selector
     console.log(selector.property("value"))
@@ -421,7 +137,7 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     val1 = val;
-                    checkVal(val1, val2);
+                    sliderCheckVal(val1, val2, selector);
             });
             var new_slider2 = d3.sliderHorizontal()
                 .min(minBudget)
@@ -432,7 +148,7 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     val2 = val;
-                    checkVal(val1, val2);
+                    sliderCheckVal(val1, val2, selector);;
             });
 
             break;
@@ -449,7 +165,7 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     val1 = val;
-                    checkVal(val1, val2);
+                    sliderCheckVal(val1, val2, selector);;
             });
             var new_slider2 = d3.sliderHorizontal()
                 .min(minGross)
@@ -460,7 +176,7 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     val2 = val;
-                    checkVal(val1, val2);
+                    sliderCheckVal(val1, val2, selector);;
             });
             break;
         case "runtime":
@@ -475,7 +191,7 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     val1 = val;
-                    checkVal(val1, val2);
+                    sliderCheckVal(val1, val2, selector);;
             });
             var new_slider2 = d3.sliderHorizontal()
                 .min(minRuntime)
@@ -485,7 +201,7 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     val2 = val;
-                    checkVal(val1, val2);
+                    sliderCheckVal(val1, val2, selector);;
             });
             break;
         case "score":
@@ -500,7 +216,7 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     val1 = val;
-                    checkVal(val1, val2);
+                    sliderCheckVal(val1, val2, selector);;
                 });
             var new_slider2 = d3.sliderHorizontal()
                 .min(minScore)
@@ -510,7 +226,7 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     val2 = val;
-                    checkVal(val1, val2);
+                    sliderCheckVal(val1, val2, selector);;
                 });
             break;
         case "votes":
@@ -526,7 +242,7 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     val1 = val;
-                    checkVal(val1, val2);
+                    sliderCheckVal(val1, val2, selector);;
                 });
             var new_slider2 = d3.sliderHorizontal()
                 .min(minVotes)
@@ -537,7 +253,7 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     val2 = val;
-                    checkVal(val1, val2);
+                    sliderCheckVal(val1, val2, selector);;
                 });
             break;
         default:
@@ -547,44 +263,37 @@ function updateSlider(list_opt) {
     new_slider_component.append('g')
                         .attr('transform', 'translate(30,30)')
                         .call(new_slider)
-                        // .append('text')
-                        // .text('From: ')  
 
     new_slider_component2.append('g')
                         .attr('transform', 'translate(30,30)')
                         .call(new_slider2) 
-                        // .append('text')
-                        // .text('To: ')                  
 
 };
 
+// reusable:
 function updateDblSelectList(list_opt) {
-    // Selector for the type of slider (budget/gross/...)
-    var selector = list_opt["type"]
-    // li component
-    var lig = list_opt["li"]
-    lig.selectAll('span').remove();
 
-    var li = lig.append("span")
+    let selector = list_opt["type"]
 
-    
-    // li.selectAll('text').remove();
-    // li.select('#selectTmp').remove();
+    let container = list_opt["container"]
+    if(container.selectAll('li'))
+    container.selectAll('li').remove();
 
-    // Value of the type selector
+    var li = container.append("li")
+
     console.log(selector.property("value"))
     let value = selector.property("value");
 
-    var typ = li.append("select")
+    var dblSelector = li.append("select")
     .attr("id", "selectTmp")
     .attr("class", "type")
     .attr("height", 28)
-    .on('change', () => {alert("1")})
+    .on('change', () => {dblCheckVal(dblSelector, selector)})
 
     // Create the new slider depending on the type value
     switch (value) {
         case "country":
-            typ.selectAll("option")
+            dblSelector.selectAll("option")
              .data(countryList)
              .enter()
              .append("option")
@@ -593,7 +302,7 @@ function updateDblSelectList(list_opt) {
 
             break;
         case "genre":
-            typ.selectAll("option")
+            dblSelector.selectAll("option")
                 .data(genreList)
                 .enter()
                 .append("option")
@@ -604,17 +313,328 @@ function updateDblSelectList(list_opt) {
         
         default:
     }
-             
+            
+};
+
+// reusable:
+// slider value check (...value, type selector) 
+function sliderCheckVal(val1, val2, selector){
+    
+   let select1 = selector.property("value");
+   let hint = "";
+   let data = [];
+
+    if(val1 > val2){
+        hint = "slider 1 greater than slider 2"
+        updateMovies1000(hint, true, data)
+        return null;
+    } else{
+        switch (select1) {
+            case "budget":
+                for(let i = 0; i < movies.length; i++){
+                    if(movies[i].budget >= val1 && movies[i].budget <= val2){
+                        data.push(movies[i]);
+                    }
+                }
+                break;
+            case "gross":
+                movies.forEach(function(d,i) {
+                    if(d.gross >= val1 && d.gross <= val2)
+                        data.push(d);
+                })
+                break;
+            case "runtime":
+                movies.forEach(function(d,i) {
+                    if(d.runtime >= val1 && d.runtime <= val2)
+                        data.push(d);
+                })
+                break;
+            case "score":
+                movies.forEach(function(d,i) {
+                    if(d.score >= val1 && d.score <= val2)
+                        data.push(d);
+                })
+                 
+                break;
+            case "votes":
+                movies.forEach(function(d,i) {
+                    if(d.votes >= val1 && d.votes <= val2)
+                        data.push(d);
+                })
+                break;
+            default:
+            
+        }
+
+        if(data.length < max_nodes){
+            hint = "create a magnet map with " + data.length + " nodes";
+            updateMovies1000(hint, false, data)
+
+        }else{
+            hint = "can't create a magnet map with " + data.length + " nodes, change the slider value or change another category";           
+            updateMovies1000(hint, true, data)
+        }
+    }
+}
+// reusable:
+// double selector value check (...value, type selector)
+function dblCheckVal(dblselector, selector){ 
+    
+    let select1 = selector.property("value");
+    let value = dblselector.property("value");  // selected country or genre
+    let hint = "";
+    
+    let data = [];
+    switch (select1) {
+        case "country":
+            movies.forEach(function(d,i) {
+                if(d.country === value)
+                    data.push(d);
+            })
+            break;
+        case "genre":
+            movies.forEach(function(d,i) {
+                if(d.genre === value)
+                    data.push(d);
+            })
+            break;
+        default:break;
+        
+    }
+
+    if(data.length < max_nodes){
+        hint = "create a magnet map with " + data.length + " nodes";
+        updateMovies1000(hint, false, data)
+
+    }else{
+        hint = "can't create a magnet map with " + data.length + " nodes, change another category";           
+        updateMovies1000(hint, true, data)
+    }
+}
+
+// first filter result : active button & update movies1000
+function updateMovies1000(hint, status, data){
+    let nextBtn = document.getElementById("next");
+    if(status) nextBtn.disabled = true;
+    else nextBtn.removeAttribute('disabled')
+    nextBtn.innerHTML = hint;
+
+    movies1000 = data;
+}
+
+//----------------------------------------------------------------
+
+function filter2(){
+    let filter2 = document.getElementById("second_filter")
+    filter2.style.display = "";
+}
+
+function add() {
+    let select2 = d3.select("#selector2");
+    let container = d3.select("#magnets_container");
+
+    var li = container.append("li")
+                        .attr("class", "w3-display-container")
+                        .attr("id", ID);
+
+    list_options[ID.toString()] = {"li": li, "type": select2};
+
+    switch (select2.property("value")) {
+        case "budget": case "gross": case "runtime": case "score": case "votes":
+            
+            updateSlider(list_options[li.property("id")]);
+
+            break;
+        case "genre": case "country":
+            updateDblSelectList2(list_options[li.property("id")])
+
+            break;
+        case "actor": case "director": case "writer":
+            
+            updateNameList(list_options[li.property("id")])
+            break;
+        default:
+            break;
+    }
+
+    
+    // Increment the id variable
+    ID += 1
+    
+};
+
+function updateSlider(list_opt) {
+    
+    let selector = list_opt["type"]
+
+    // let container = list_opt["container"]
+    // if(container.selectAll('li'))
+    // container.selectAll('li').remove();
+
+    var li = list_opt["li"]
+
+    // Value of the type selector
+    console.log(selector.property("value"))
+    let value = selector.property("value");
+
+    li.append("text")
+    .text(value)
+    
+    // Remove the previous svg component (for the slider)
+    if(list_opt["slider"]) list_opt["slider"].remove();
+
+    // Create the order selector (higher than, lower than, equals to)
+    var order = li.append("select")
+            // .on('change', function() { createMagOnMap();})
+
+    order.selectAll("option")
+            .data(["higher than", "equals to", "lower than"])
+            .enter()
+            .append("option")
+            .text(function(d){return d;})
+            .attr("value", function(d){return d;});
+
+    list_opt["order"] = order;
+
+    // Create a new svg for the new slider
+    let new_slider_component = li.append('svg')
+            .attr('width', 700)
+            .attr('height', 70)
+
+    // Update the dict
+    list_opt["slider"] = new_slider_component;
+
+    // Create the new slider depending on the type value
+    switch (value) {
+        case "budget":
+            let minBudget = d3.min(movies, d => d.budget);
+            let maxBudget = d3.max(movies, d => d.budget);
+        
+            var new_slider = d3.sliderHorizontal()
+                .min(minBudget)
+                .max(maxBudget)
+                .step(1000000)
+                .ticks(5)
+                .width(500)
+                .displayValue(true)
+                .on('onchange', (val) => {
+                    list_opt["slider_value"] = val;
+                    sliderCheckVal2(val, order, selector)
+                })
+                .on('end', function() { createMagOnMap()});
+            break;
+        case "gross":
+            let minGross = 0;
+            let maxGross = Math.ceil(d3.max(movies, d => d.gross) / 1000000) * 1000000;
+
+            var new_slider = d3.sliderHorizontal()
+                .min(minGross)
+                .max(maxGross)
+                .step(1000000)
+                .ticks(5)
+                .width(500)
+                .displayValue(true)
+                .on('onchange', (val) => {
+                    list_opt["slider_value"] = val;
+                    sliderCheckVal2(val, order, selector)
+                })
+                .on('end', function() { createMagOnMap()});
+            break;
+        case "runtime":
+            let minRuntime = d3.min(movies, d => d.runtime);
+            let maxRuntime = d3.max(movies, d => d.runtime);
+        
+            var new_slider = d3.sliderHorizontal()
+                .min(minRuntime)
+                .max(maxRuntime)
+                .step(1)
+                .width(500)
+                .displayValue(true)
+                .on('onchange', (val) => {
+                    list_opt["slider_value"] = val;
+                    sliderCheckVal2(val, order, selector)
+                })
+                .on('end', function() { createMagOnMap()});
+            break;
+        case "score":
+            let minScore = 0;
+            let maxScore = 10;
+        
+            var new_slider = d3.sliderHorizontal()
+                .min(minScore)
+                .max(maxScore)
+                .step(1)
+                .width(500)
+                .displayValue(true)
+                .on('onchange', (val) => {
+                    list_opt["slider_value"] = val;
+                    sliderCheckVal2(val, order, selector)
+                })
+                .on('end', function() { createMagOnMap()});
+            break;
+        case "votes":
+            let minVotes = 0;
+            let maxVotes = Math.ceil(d3.max(movies, d => d.votes) / 100000) * 100000;
+        
+            var new_slider = d3.sliderHorizontal()
+                .min(minVotes)
+                .max(maxVotes)
+                .step(1000)
+                .width(500)
+                .ticks(5)
+                .displayValue(true)
+                .on('onchange', (val) => {
+                    list_opt["slider_value"] = val;
+                    sliderCheckVal2(val, order, selector)
+                })
+                .on('end', function() { createMagOnMap()});
+            break;
+        default:
+    }
+
+    // Add the slider into the svg component
+    new_slider_component.append('g')
+                        .attr('transform', 'translate(30,30)')
+                        .call(new_slider);
+
+                        
+    // TODO: reuseable
+    let rightMenu = li.append("span")
+                .attr("class", "w3-button w3-display-right");
+
+
+    // Create a new svg for the new slider
+    let new_magnets = rightMenu.append('svg')
+                            .attr('width', 50)
+                            .attr('height', 30)
+        
+
+    new_magnets.append("circle")
+        .attr('cx', '10px')
+        .attr('cy', '10px')
+        .attr('r','10px')
+        .style('fill', 'red')
+        .on("click", function() { createMagOnMap(); })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
+
+    rightMenu.append("span")
+        .attr("class", "w3-button w3-display-right")
+        .on("click", function() { li.style("display", "none"); 
+                            delete list_options[li.property("id")]; 
+                            ; })
+        .text("x")
 
 };
-function updateNamelist(list_opt) {
-    var selector = list_opt["type"]
-    var lig = list_opt["li"]
-    lig.selectAll('span').remove();
 
-    var li = lig.append("span")
+function updateNameList(list_opt) {
+    let selector = list_opt["type"]
+    var li = list_opt["li"]
 
+    // Value of the type selector
+    console.log(selector.property("value"))
     let value = selector.property("value");
+
+    li.append("text")
+    .text(value)
 
     switch (value) {
         case "actor":
@@ -653,7 +673,99 @@ function updateNamelist(list_opt) {
                 .on("click", function() { li.style("display", "none"); delete list_opt;})
                 .text("x")
    
+
+                let rightMenu = li.append("span")
+                .attr("class", "w3-button w3-display-right");
+
+
+    // Create a new svg for the new slider
+    let new_magnets = rightMenu.append('svg')
+                            .attr('width', 50)
+                            .attr('height', 30)
+        
+
+    new_magnets.append("circle")
+        .attr('cx', '10px')
+        .attr('cy', '10px')
+        .attr('r','10px')
+        .style("fill", "green")
+        .on("click", function() { createMagOnMap(); })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
+
+    rightMenu.append("span")
+        .attr("class", "w3-button w3-display-right")
+        .on("click", function() { li.style("display", "none"); 
+                            delete list_options[li.property("id")]; 
+                            ; })
+        .text("x")
 }
+
+function updateDblSelectList2(list_opt) {
+
+    let selector = list_opt["type"]
+    var li = list_opt["li"]
+
+    // Value of the type selector
+    console.log(selector.property("value"))
+    let value = selector.property("value");
+
+    li.append("text")
+    .text(value)
+
+    var dblSelector = li.append("select")
+    .attr("id", "selectTmp")
+    .attr("class", "type")
+    .attr("height", 28)
+    .on('change', () => {dblCheckVal2(dblSelector, selector)})
+
+    // Create the new slider depending on the type value
+    switch (value) {
+        case "country":
+            dblSelector.selectAll("option")
+             .data(countryList)
+             .enter()
+             .append("option")
+             .text(function(d){return d;})
+             .attr("value", function(d) {return d;});
+
+            break;
+        case "genre":
+            dblSelector.selectAll("option")
+                .data(genreList)
+                .enter()
+                .append("option")
+                .text(function(d){return d;})
+                .attr("value", function(d) {return d;});
+   
+               break;
+        
+        default:
+    }
+
+    let rightMenu = li.append("span")
+                .attr("class", "w3-button w3-display-right");
+
+
+    // Create a new svg for the new slider
+    let new_magnets = rightMenu.append('svg')
+                            .attr('width', 50)
+                            .attr('height', 30)
+        
+
+    new_magnets.append("circle")
+        .attr('cx', '10px')
+        .attr('cy', '10px')
+        .attr('r','10px')
+        .style("fill", "yellow") //TODO: fix with random color
+        .on("click", function() { createMagOnMap(); })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
+
+    rightMenu.append("span")
+        .attr("class", "w3-button w3-display-right")
+        .on("click", function() { li.style("display", "none"); 
+                            delete list_options[li.property("id")]; 
+                            ; })
+        .text("x")
+            
+};
 
 function autocomp(e, autocomp_box, list_opt) {
     autocomp_box.selectAll("li").remove();
@@ -683,5 +795,150 @@ function autocomp(e, autocomp_box, list_opt) {
                     .on("click", function() { e.target.value = data; autocomp_box.selectAll("li").remove(); autocomp_box.style("display", "none"); })
                     .text(data)
     });
+
+}
+// TODO: name compare
+
+function createMagOnMap(){
+    alert("create a mag");
+}
+
+function sliderCheckVal2(val, order, selector){
+    
+    let select1 = selector.property("value");
+    
+    let data = [];
+
+    switch (select1) {
+        case "budget":
+           if (order.property("value") ==  "higher than") {
+               movies1000.forEach(function(d,i) {
+                   if(d.budget > val)
+                       data.push(d.id);
+               })
+
+           } else if (order.property("value") ==  "equals to") {
+               movies1000.forEach(function(d,i) {
+                   if(d.budget = val)
+                       data.push(d.id);
+               })
+           } else {
+               movies1000.forEach(function(d,i) {
+                   if(d.budget < val)
+                       data.push(d.id);
+               })
+           }
+           break;
+        case "gross":
+           if (order.property("value") ==  "higher than") {
+               movies1000.forEach(function(d,i) {
+                   if(d.gross > val)
+                       data.push(d.id);
+               })
+
+           } else if (order.property("value") ==  "equals to") {
+               movies1000.forEach(function(d,i) {
+                   if(d.gross = val)
+                       data.push(d.id);
+               })
+           } else {
+               movies1000.forEach(function(d,i) {
+                   if(d.gross < val)
+                       data.push(d.id);
+               })
+           } 
+           break;
+        case "runtime":
+           if (order.property("value") ==  "higher than") {
+               movies1000.forEach(function(d,i) {
+                   if(d.runtime > val)
+                       data.push(d.id);
+               })
+
+           } else if (order.property("value") ==  "equals to") {
+               movies1000.forEach(function(d,i) {
+                   if(d.runtime = val)
+                       data.push(d.id);
+               })
+           } else {
+               movies1000.forEach(function(d,i) {
+                   if(d.runtime < val)
+                       data.push(d.id);
+               })
+           } 
+           break;
+        case "score":
+           if (order.property("value") ==  "higher than") {
+               movies1000.forEach(function(d,i) {
+                   if(d.score > val)
+                       data.push(d.id);
+               })
+
+           } else if (order.property("value") ==  "equals to") {
+               movies1000.forEach(function(d,i) {
+                   if(d.score = val)
+                       data.push(d.id);
+               })
+           } else {
+               movies1000.forEach(function(d,i) {
+                   if(d.score < val)
+                       data.push(d.id);
+               })
+           } 
+           break;
+        case "votes":
+           if (order.property("value") ==  "higher than") {
+               movies1000.forEach(function(d,i) {
+                   if(d.votes > val)
+                       data.push(d.id);
+               })
+
+           } else if (order.property("value") ==  "equals to") {
+               movies1000.forEach(function(d,i) {
+                   if(d.votes = val)
+                       data.push(d.id);
+               })
+           } else {
+               movies1000.forEach(function(d,i) {
+                   if(d.votes < val)
+                       data.push(d.id);
+               })
+           } 
+           break;
+        default:
+        
+    }   
+    
+    moviesAtt = data;
+    console.log(moviesAtt)
+    
+}
+
+function dblCheckVal2(dblselector, selector){ 
+    
+    let select1 = selector.property("value");
+    let value = dblselector.property("value");  // selected country or genre
+    let hint = "";
+    
+    let data = [];
+    switch (select1) {
+        case "country":
+            movies1000.forEach(function(d,i) {
+                if(d.country === value)
+                    data.push(d.id);
+            })
+            break;
+        case "genre":
+            movies1000.forEach(function(d,i) {
+                if(d.genre === value)
+                    data.push(d.id);
+            })
+            break;
+        default:break;
+        
+    }
+
+    moviesAtt = data;
+    console.log(moviesAtt);
 }
 
