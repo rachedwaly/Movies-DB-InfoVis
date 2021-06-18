@@ -1,4 +1,4 @@
-const h = 600;
+const h = 800;
 const w = 1400;
 
 const maxDots = 500
@@ -15,19 +15,16 @@ var mapOfMagnet = new Map();
 var list;
 
 let container=d3.select("body").append("div").attr('id',"container");
-console.log(container);
 
 let svg = container
     .append("svg")
     .attr("width", w)
-    .attr("height", h);
+    .attr("height", h)
+    .style("position","fixed")
+    .style("top","200px");
 
 
-var tooltip=d3.select('#container').append("div")
-.style("position", "fixed")
-.style("visibility", "hidden")
-.text("I'm a circle!");
-
+var tooltip=d3.select('body').select("#tooltip");
 
 svg.on('click', (event) => {
     var coordinates = d3.pointer(event);
@@ -42,13 +39,13 @@ svg.on('click', (event) => {
         currentMagnetid += 1;
         magnets.set(currentMagnetid, { x: xm, y: ym });
 
-        d3.select("svg").append('rect')
+        d3.select("svg").append('image')
             .attr('id', "magnet" + currentMagnetid.toString())
             .attr('x', xm)
             .attr('y', ym)
-            .attr('width', 10)
-            .attr('height', 10)
-            .attr('stroke', 'black')
+            .attr('width', 40)
+            .attr('height', 40)
+            .attr("xlink:href", "https://img.icons8.com/cotton/64/000000/magnet.png")
             .attr('fill', '#69a3b2')
             .call(d3.drag().on("start", dragstarted)
                            .on("drag", dragged)
@@ -61,7 +58,6 @@ svg.on('click', (event) => {
         apply_magnets();
 
     }
-    
 });
 
 function dragstarted(event){
@@ -81,11 +77,7 @@ function dragged(event){
 
     svg.select('#magnet'+draged_magnetID.toString())
         .attr('x', event.x)
-        .attr('y', event.y)
-        .attr('width', 10)
-        .attr('height', 10)
-        .attr('stroke', 'black')
-        .attr('fill', '#69a3b2');
+        .attr('y', event.y);
 
         resetMagnets();
         apply_magnets();   
@@ -103,7 +95,6 @@ function dragended(event){
 d3.csv("data/movies.csv", function (d, i) {
     r = d3.randomUniform(0,h*0.3)()
     theta = d3.randomUniform(0,2*3.14)()
-    console.log(r)
     return {
         id: +i,
         budget: +d.budget,
@@ -172,7 +163,6 @@ function collide(node) {
   };
 }
 
-
 function ticked() {
     var u = d3.select('svg')
         .selectAll('circle')
@@ -192,14 +182,39 @@ function ticked() {
             return d.y
         })
         
-        .on("mouseover", function(){return tooltip.style("visibility", "visible");})
-        .on("mousemove", function(d){return tooltip.style("top", d.x+"px").style("left",d.y+"px");})
+        .on("mouseover", function(event, d){
+            var coordinates = d3.pointer(event);
+            lastX = coordinates[0];
+            lastY = coordinates[1];
+            tooltip
+
+                .select("#info")
+                .html(tooltipText(d));
+
+            console.log("x "+lastX)
+            console.log("y "+lastY)
+
+            console.log(d)
+            return tooltip.style("visibility", "visible");
+        })
         .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
         
 }
 
-
-
+function tooltipText(d) {
+    return '<Strong>Title</Strong>: ' + d.name + '<br>' 
+    +'<Strong>Director</Strong>: ' + d.director + '<br>' 
+    +'<Strong>Writer</Strong>: ' + d.writer + '<br>' 
+    +'<Strong>Star</Strong>: ' + d.star + '<br>' 
+    +'<Strong>Company</Strong>: ' + d.company + '<br>' 
+    +'<Strong>Genre</Strong>: ' + d.genre + '<br>' 
+    +'<Strong>Rating</Strong>: ' + d.rating + '<br>' 
+    +'<Strong>Score in IMBD</Strong>: ' + d.score + '<br>' 
+    +'<Strong>Budget</Strong>: ' + d.budget + '<br>' 
+    +'<Strong>Title</Strong>: ' + d.name + '<br>' 
+    +'<Strong>Year</Strong>: ' + d.year + '<br>' 
+    +'<Strong>Gross</Strong>: ' + d.gross + '<br>' 
+}  
 
 function apply_magnets() {
 

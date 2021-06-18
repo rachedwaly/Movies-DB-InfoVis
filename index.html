@@ -3,14 +3,22 @@
         <meta charset="utf-8">
         <title>Hello, movies (D3)</title>
         <script type="text/javascript" src="js/d3/d3.js"></script>
+        <link rel="stylesheet" href="css/tooltip.css">
     </head>
 
     <body>
-        <script type="text/javascript" src="js/test.js"></script>
         
         <p> hello </p>
+        <div id="tooltip" style="position:absolute; visibility:hidden">
+            <p style="color:blue"><strong>Movie information</strong></p>
+            <p><span id="info"></span></p>
+        </div>
         <button onclick="switchTo(0)">Click me 0</button> 
         <button onclick="switchTo(1)">Click me 1</button> 
+
+
+
+        <script type="text/javascript" src="js/test.js"></script>
 
     </body>
 
