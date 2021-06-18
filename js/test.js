@@ -101,6 +101,9 @@ function dragended(event){
 
 
 d3.csv("data/movies.csv", function (d, i) {
+    r = d3.randomUniform(0,h*0.3)()
+    theta = d3.randomUniform(0,2*3.14)()
+    console.log(r)
     return {
         id: +i,
         budget: +d.budget,
@@ -117,7 +120,9 @@ d3.csv("data/movies.csv", function (d, i) {
         star: d.star,
         votes: +d.votes,
         writer: d.writer,
-        year: +d.year
+        year: +d.year,
+        x : +w/2+r*Math.cos(theta),
+        y : +h/2+r*Math.sin(theta)
     };
 
 }).then(function (csv) {
@@ -128,24 +133,44 @@ d3.csv("data/movies.csv", function (d, i) {
     nodes = csv.slice(0, 1000);
 
 
+
+     
+
+
     initializeMap(csv);
 
 
     simulation = d3.forceSimulation(nodes)
-        .force('x', d3.forceX(function (d) {
-            return w / 2
-        }))
-        .force('y', d3.forceY(function (d) {
-            return h / 2
-
-        }))
         .force('collision', d3.forceCollide().radius(function (d) {
-            return 10
-        }))
+            return 8
+        }).strength(1.3).iterations(4))
         .on('tick', ticked);
 
 });
 
+function collide(node) {
+  var r = node.radius + 16,
+      nx1 = node.x - r,
+      nx2 = node.x + r,
+      ny1 = node.y - r,
+      ny2 = node.y + r;
+  return function(quad, x1, y1, x2, y2) {
+    if (quad.point && (quad.point !== node)) {
+      var x = node.x - quad.point.x,
+          y = node.y - quad.point.y,
+          l = Math.sqrt(x * x + y * y),
+          r = node.radius + quad.point.radius;
+      if (l < r) {
+        l = (l - r) / l * .5;
+        node.x -= x *= l;
+        node.y -= y *= l;
+        quad.point.x += x;
+        quad.point.y += y;
+      }
+    }
+    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+  };
+}
 
 
 function ticked() {
