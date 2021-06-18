@@ -2,8 +2,10 @@ const width = document.getElementById("container").offsetWidth * 0.95,
     height = 800,
     fontFamily = "Open Sans",
     range_max = 50, // Max font size
-    max_words = 100, // Max number of words display on the screen
-    fillScale = d3.scaleOrdinal(d3.schemeCategory10); // Build a discrete scale of 10 different colors
+    max_words = 100 // Max number of words display on the screen
+    
+    //fillScale = d3.scaleOrdinal(d3.schemeCategory10); // Build a discrete scale of 10 different colors
+var fillScale;
 
 //var words = []; // All possible words
 //var selected_words = [] // Words to print
@@ -24,6 +26,13 @@ var companyList = []
 var countryList = []
 
 //d3.select("body").on("click", function () { d3.selectAll(".autocomp_box").style("display", "none"); })
+
+var svg_g = d3.select("#cloud_container").append("svg") // Ajout d'un élément SVG sur un DIV existant de la page
+            .attr("class", "svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g") // Ajout du groupe qui contiendra tout les mots
+            .attr("transform", "translate(" + width / 2 + ", " + height / 2 + ")") // Centrage du groupe
 
 
 d3.csv("data/movies.csv", function(d) {
@@ -74,7 +83,12 @@ d3.csv("data/movies.csv", function(d) {
     //selected_words.length = max_words; // Print only max_words words
     selected_movies = [...movies];
     selected_movies.length = max_words; // Print only max_words words
-    console.log(csv[20]);
+    console.log(csv[20]);    
+
+    var minSize = d3.min(selected_movies, d => d.filter);
+    var maxSize = d3.max(selected_movies, d => d.filter);
+    fillScale = d3.scaleLinear().domain([minSize, maxSize])
+                    .range(["blue", "red"])
 
     // Draw the cloud words
     drawcloud(selected_movies, range_max); 
@@ -83,7 +97,7 @@ d3.csv("data/movies.csv", function(d) {
 // The function looks for the max range of the font that allows the display of all words of tmp_movies
 function drawcloud (tmp_movies, rangeMax) { // declare the function
     // Delete the previous cloud if exists
-    d3.select("#cloud_container").select("svg").remove();
+    d3.select("#cloud_container").select("svg").select('g').selectAll('text').remove();
 
     // Compute our fontScale domain
     var minSize = d3.min(selected_movies, d => d.filter);
@@ -95,6 +109,7 @@ function drawcloud (tmp_movies, rangeMax) { // declare the function
     fontScale = d3.scaleLinear()
         .domain([minSize, maxSize]) 
         .range([5, rangeMax]); // the argument here 
+
 
     d3.layout.cloud()
         .size([width, height])
@@ -129,21 +144,23 @@ function drawcloud (tmp_movies, rangeMax) { // declare the function
 
 
 function draw(output) {
-    d3.select("#cloud_container").append("svg") // Ajout d'un élément SVG sur un DIV existant de la page
-        .attr("class", "svg")
-        .attr("width", width)
-        .attr("height", height)
-        .append("g") // Ajout du groupe qui contiendra tout les mots
-            .attr("transform", "translate(" + width / 2 + ", " + height / 2 + ")") // Centrage du groupe
-            .selectAll("text")
-            .data(output)
-            .enter().append("text") // Ajout de chaque mot avec ses propriétés
+    let text = svg_g.selectAll("text")
+            .data(output);
+
+    text.enter().append("text") // Ajout de chaque mot avec ses propriétés
+                .transition()
+                .duration(500)
                 .style("font-size", d => d.size + "px")
                 .style("font-family", fontFamily)
                 .style("fill", d => fillScale(d.filter))
                 .attr("text-anchor", "middle")
                 .attr("transform", d => "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")")
                 .text(d => d.name);
+    /*text.exit()
+        .transition() // and apply changes to all of them
+        .duration(500)
+        .style("opacity", 0)
+        .remove();*/
 };
 
 
@@ -203,9 +220,9 @@ function add() {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     list_options[li.property("id")]["slider_value"] = val;
-                    updateWeights();
                 })
-                .on('end', function() { drawcloud(selected_movies, range_max)});
+                .on('end', function() { updateWeights(); 
+                                        drawcloud(selected_movies, range_max)});
 
             // Create the svg component for the slider
             var slider_component = li.append('svg')
@@ -220,13 +237,13 @@ function add() {
             li.append("span")
                 .attr("class", "w3-button w3-display-right")
                 .on("click", function() { li.style("display", "none"); 
-                                        delete list_options[li.property("id")]; 
-                                        drawcloud(selected_movies, range_max); })
+                                        delete list_options[li.property("id")];
+                                        updateWeights();
+                                        drawcloud(selected_movies, range_max)})
                 .text("x")
 
             // Store new selectors
             list_options[ID.toString()] = {"value": select_value, "li": li, "type": typ, "order": order, "slider": slider_component, "slider_value": budget_slider.value()};
-            console.log(list_options[ID.toString()])
             break;
         case "2":
             // Create a new li
@@ -240,7 +257,10 @@ function add() {
             var typ = li.append("select")
                 .attr("class", "type")
                 .attr("height", 28)
-                .on('change', () => updateNamelist(list_options[li.property("id")]))
+                .on('change', function() { updateNamelist(list_options[li.property("id")]);
+                                            namelist.property("value", "");
+                                            updateWeights();
+                                            drawcloud(selected_movies, range_max)})
             
             // Add options into the selector
             typ.selectAll("option")
@@ -267,7 +287,10 @@ function add() {
 
             li.append("span")
                 .attr("class", "w3-button w3-display-right")
-                .on("click", function() { li.style("display", "none"); delete list_options[li.property("id")];})
+                .on("click", function() { li.style("display", "none"); 
+                                        delete list_options[li.property("id")];
+                                        updateWeights();
+                                        drawcloud(selected_movies, range_max)})
                 .text("x")
 
             // Store new selectors
@@ -285,7 +308,10 @@ function add() {
            var typ = li.append("select")
                .attr("class", "type")
                .attr("height", 28)
-               .on('change', () => updateNamelist(list_options[li.property("id")]))
+               .on('change', function() { updateNamelist(list_options[li.property("id")]);
+                                            namelist.property("value", "");
+                                            updateWeights();
+                                            drawcloud(selected_movies, range_max)})
            
            // Add options into the selector
            typ.selectAll("option")
@@ -312,7 +338,10 @@ function add() {
 
            li.append("span")
                .attr("class", "w3-button w3-display-right")
-               .on("click", function() { li.style("display", "none"); delete list_options[li.property("id")];})
+               .on("click", function() { li.style("display", "none"); 
+                                        delete list_options[li.property("id")];
+                                        updateWeights();
+                                        drawcloud(selected_movies, range_max)})
                .text("x")
 
            // Store new selectors
@@ -337,7 +366,6 @@ function updateSlider(list_opt) {
     var li = list_opt["li"]
 
     // Value of the type selector
-    console.log(selector.property("value"))
     let value = selector.property("value");
 
     // Remove the previous svg component (for the slider)
@@ -366,9 +394,9 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     list_opt["slider_value"] = val;
-                    updateWeights();
                 })
-                .on('end', function() { drawcloud(selected_movies, range_max)});
+                .on('end', function() { updateWeights();
+                                        drawcloud(selected_movies, range_max)});
             break;
         case "gross":
             let minGross = 0;
@@ -383,9 +411,9 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     list_opt["slider_value"] = val;
-                    updateWeights();
                 })
-                .on('end', function() { drawcloud(selected_movies, range_max)});
+                .on('end', function() { updateWeights();
+                                        drawcloud(selected_movies, range_max)});
             break;
         case "runtime":
             let minRuntime = d3.min(movies, d => d.runtime);
@@ -399,9 +427,9 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     list_opt["slider_value"] = val;
-                    updateWeights();
                 })
-                .on('end', function() { drawcloud(selected_movies, range_max)});
+                .on('end', function() { updateWeights();
+                                        drawcloud(selected_movies, range_max)});
             break;
         case "score":
             let minScore = 0;
@@ -415,9 +443,9 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     list_opt["slider_value"] = val;
-                    updateWeights();
                 })
-                .on('end', function() { drawcloud(selected_movies, range_max)});
+                .on('end', function() { updateWeights();
+                                        drawcloud(selected_movies, range_max)});
             break;
         case "votes":
             let minVotes = 0;
@@ -432,9 +460,9 @@ function updateSlider(list_opt) {
                 .displayValue(true)
                 .on('onchange', (val) => {
                     list_opt["slider_value"] = val;
-                    updateWeights();
                 })
-                .on('end', function() { drawcloud(selected_movies, range_max)});
+                .on('end', function() { updateWeights();
+                                        drawcloud(selected_movies, range_max)});
             break;
         default:
     }
@@ -477,7 +505,7 @@ function updateNamelist(list_opt) {
 
 function autocomp(e, autocomp_box, list_opt) {
     autocomp_box.selectAll("li").remove();
-    let userData = e.target.value; //user enetered data
+    let userData = e.target.value; //user entered data
     let emptyArray = [];
 
     let suggestions = list_opt["name"];
@@ -496,11 +524,14 @@ function autocomp(e, autocomp_box, list_opt) {
         //autocomp_box.style("display", "none") //hide autocomplete box
     }
 
-    console.log(emptyArray);
     emptyArray = emptyArray.map((data)=>{
         autocomp_box.append("li")
                     .attr("class", "autocomp-items")
-                    .on("click", function() { e.target.value = data; autocomp_box.selectAll("li").remove(); autocomp_box.style("display", "none"); })
+                    .on("click", function() { e.target.value = data; 
+                                            autocomp_box.selectAll("li").remove(); 
+                                            autocomp_box.style("display", "none"); 
+                                            updateWeights(); 
+                                            drawcloud(selected_movies, range_max)})
                     .text(data)
     });
 }
@@ -509,16 +540,16 @@ function updateWeights() {
     // Reinitialize filter weights
     d3.map(movies, function(d){d.filter = 0;})
 
-    console.log(movies)
-    console.log(selected_movies)
-    console.log("inside");
+    console.log("Update Weights");
+
+    let typ;
     for (var key in list_options){
         var li_param = list_options[key];
 
         switch (li_param["value"]) {
             case "1":
                 //"type": typ, "order": order, "slider": slider_component
-                let typ = li_param["type"]
+                typ = li_param["type"]
                 let order = li_param["order"]
                 let slider = li_param["slider"]
 
@@ -555,8 +586,6 @@ function updateWeights() {
                 }
 
                 if (typ.property("value") == "score") {
-                    console.log("score")
-                    console.log(order.property("value"))
                     if (order.property("value") ==  "higher than") {
                         d3.map(movies.filter(function(d){ return d.score> li_param["slider_value"] }), function(d) {d.filter += 1})
                     } else if (order.property("value") ==  "equals to") {
@@ -576,15 +605,34 @@ function updateWeights() {
                     }
                 }
 
-                selected_movies = [...movies.sort((a, b) => d3.descending(a.filter, b.filter))]
-                console.log(selected_movies)
-                selected_movies.length = max_words;
-                console.log(selected_movies)
-
                 break;
             case "2":
             case "3":
+                typ = li_param["type"];
+                let li = li_param["li"];
+                let name = li.select("input").property("value");
+
+                //console.log(name);
+                if (typ.property("value") == "actor") {
+                    d3.map(movies.filter(function(d){ return d.star == name }), function(d) {d.filter += 1})
+                } else if (typ.property("value") == "director") {
+                    d3.map(movies.filter(function(d){ return d.director == name }), function(d) {d.filter += 1})
+                } else if (typ.property("value") == "writer") {
+                    d3.map(movies.filter(function(d){ return d.writer == name }), function(d) {d.filter += 1})
+                } else if (typ.property("value") == "company") {
+                    d3.map(movies.filter(function(d){ return d.company == name }), function(d) {d.filter += 1})
+                } else if (typ.property("value") == "country") {
+                    d3.map(movies.filter(function(d){ return d.country == name }), function(d) {d.filter += 1})
+                }
+
+            
                 break;
         }
+
+        selected_movies = [...movies.sort((a, b) => d3.descending(a.filter, b.filter))]
+        selected_movies.length = max_words;
+
+        fillScale = d3.scaleLinear().domain([0, list_options.filter(Boolean).length])
+                    .range(["blue", "red"])
     }
 }
