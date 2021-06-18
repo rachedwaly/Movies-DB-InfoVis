@@ -16,3 +16,7 @@
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
     pointer-events: none;
   }
+
+  svg {
+    background-color: rgba(213, 255, 216, 0.315);
+  }

@@ -6,13 +6,15 @@ const maxDots = 500
 var movies = [];
 var nodes = [];
 var magnets = new Map();
+var maxMagnetsPerNode = 0;
 var flag = 1;
 var isDragingMagnet = false;
 var draged_magnetID = -1;
 var simulation;
 var currentMagnetid = -1; //will be use to add a certain magnet inside the svg
 var mapOfMagnet = new Map();
-var list;
+var list = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100];
+var fillScale = d3.scaleLinear().domain([0, 1]).range(["blue", "red"]);
 
 let container=d3.select("body").append("div").attr('id',"container");
 
@@ -51,14 +53,23 @@ svg.on('click', (event) => {
                            .on("drag", dragged)
                            .on("end", dragended));
         //fill the mapofmagnet
-        list = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]
-        updateMap(list, currentMagnetid);
+        //update list
 
+        updateMap(list, currentMagnetid);
         resetMagnets();
         apply_magnets();
+        update_colors();
 
     }
 });
+
+function update_colors(){
+    fillScale = d3.scaleLinear().domain([0, maxMagnetsPerNode]).range(["blue", "red"]);
+    d3.select('svg')
+      .selectAll('circle')
+      .style("fill", d => fillScale(mapOfMagnet.get(d.id).length))
+}
+
 
 function dragstarted(event){
     if (flag != 0) {return;}
@@ -139,29 +150,6 @@ d3.csv("data/movies.csv", function (d, i) {
 
 });
 
-function collide(node) {
-  var r = node.radius + 16,
-      nx1 = node.x - r,
-      nx2 = node.x + r,
-      ny1 = node.y - r,
-      ny2 = node.y + r;
-  return function(quad, x1, y1, x2, y2) {
-    if (quad.point && (quad.point !== node)) {
-      var x = node.x - quad.point.x,
-          y = node.y - quad.point.y,
-          l = Math.sqrt(x * x + y * y),
-          r = node.radius + quad.point.radius;
-      if (l < r) {
-        l = (l - r) / l * .5;
-        node.x -= x *= l;
-        node.y -= y *= l;
-        quad.point.x += x;
-        quad.point.y += y;
-      }
-    }
-    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-  };
-}
 
 function ticked() {
     var u = d3.select('svg')
@@ -170,10 +158,7 @@ function ticked() {
         .join('circle')
         .attr('r', 5)
         .attr('fill', function (d) {
-            if ((d.gross <= 1000000) && (d.name == "Adventure")) { return "#40F99B" } //green
-            if ((d.gross <= 1000000) && (d.name != "Adventure")) { return "#FFFF00" } //yellow
-            //pink
-            return "#000000"
+            return fillScale(0);
         })
         .attr('cx', function (d) {
             return d.x
@@ -191,10 +176,6 @@ function ticked() {
                 .select("#info")
                 .html(tooltipText(d));
 
-            console.log("x "+lastX)
-            console.log("y "+lastY)
-
-            console.log(d)
             return tooltip.style("visibility", "visible");
         })
         .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
@@ -260,6 +241,9 @@ function initializeMap(data) {
 function updateMap(list, magnetID) {
     for (const i of list) {
         mapOfMagnet.get(i).push(magnetID);
+        if (mapOfMagnet.get(i).length>maxMagnetsPerNode){
+            maxMagnetsPerNode = mapOfMagnet.get(i).length;
+        }
     }
 
 }
