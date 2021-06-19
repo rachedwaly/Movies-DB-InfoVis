@@ -18,13 +18,13 @@ var movies = [];
 let movies1000 = [];    //after first filter
 let moviesAtt = [];     //attracted movies id
 
-//TODO: update list from movies to movies1000
+
 var actorsList = [];
 var directorList = []
 var writerList = []
 var companyList = []
-var countryList = []
-var genreList = []
+var countryList = ["chose a country"]
+var genreList = ["chose a genre"]
 let i = 0; //read id 
 
 d3.csv("data/movies.csv", function(d) {
@@ -48,7 +48,19 @@ d3.csv("data/movies.csv", function(d) {
     };
 }).then(function(csv) {    
     movies = csv;
-    csv.forEach(function(d,i) {
+    updateLists(movies);
+});
+
+function updateLists(data){
+
+    actorsList = [];
+    directorList = []
+    writerList = []
+    companyList = []
+    countryList = ["0 Chose a country"]
+    genreList = ["0 Chose a genre"]
+
+    data.forEach(function(d,i) {
         actorsList.push(d.star);
         directorList.push(d.director);
         writerList.push(d.writer);
@@ -72,8 +84,7 @@ d3.csv("data/movies.csv", function(d) {
     companyList.sort();
     countryList.sort();
     genreList.sort();
-
-});
+}
 
 
 //first filter
@@ -110,7 +121,7 @@ function updateSlider1(list_opt) {
     .text("from: ")
     // Create a new svg for the new slider
     let new_slider_component = li.append('svg')
-            .attr('width', 700)
+            .attr('width', 600)
             .attr('height', 70)
     
             
@@ -118,7 +129,7 @@ function updateSlider1(list_opt) {
     .text("to: ")
 
     let new_slider_component2 = li.append('svg')
-            .attr('width', 700)
+            .attr('width', 600)
             .attr('height', 70)
 
     let val1 = 0, val2 = 0;
@@ -427,6 +438,7 @@ function updateMovies1000(hint, status, data){
 function filter2(){
     let filter2 = document.getElementById("second_filter")
     filter2.style.display = "";
+    createMap();
 }
 
 function add() {
@@ -442,14 +454,14 @@ function add() {
     switch (select2.property("value")) {
         case "budget": case "gross": case "runtime": case "score": case "votes":
             
-            updateSlider(list_options[li.property("id")]);
+            updateSlider2(list_options[li.property("id")]);
 
             break;
         case "genre": case "country":
             updateDblSelectList2(list_options[li.property("id")])
 
             break;
-        case "actor": case "director": case "writer":
+        case "actor": case "director": case "writer": case "company":
             
             updateNameList(list_options[li.property("id")])
             break;
@@ -463,7 +475,7 @@ function add() {
     
 };
 
-function updateSlider(list_opt) {
+function updateSlider2(list_opt) {
     
     let selector = list_opt["type"]
 
@@ -498,7 +510,7 @@ function updateSlider(list_opt) {
 
     // Create a new svg for the new slider
     let new_slider_component = li.append('svg')
-            .attr('width', 700)
+            .attr('width', 600)
             .attr('height', 70)
 
     // Update the dict
@@ -521,7 +533,7 @@ function updateSlider(list_opt) {
                     list_opt["slider_value"] = val;
                     sliderCheckVal2(val, order, selector)
                 })
-                .on('end', function() { createMagOnMap()});
+                // .on('end', function() { createMagOnMap()});
             break;
         case "gross":
             let minGross = 0;
@@ -538,7 +550,7 @@ function updateSlider(list_opt) {
                     list_opt["slider_value"] = val;
                     sliderCheckVal2(val, order, selector)
                 })
-                .on('end', function() { createMagOnMap()});
+                // .on('end', function() { createMagOnMap()});
             break;
         case "runtime":
             let minRuntime = d3.min(movies, d => d.runtime);
@@ -554,7 +566,7 @@ function updateSlider(list_opt) {
                     list_opt["slider_value"] = val;
                     sliderCheckVal2(val, order, selector)
                 })
-                .on('end', function() { createMagOnMap()});
+                // .on('end', function() { createMagOnMap()});
             break;
         case "score":
             let minScore = 0;
@@ -570,7 +582,7 @@ function updateSlider(list_opt) {
                     list_opt["slider_value"] = val;
                     sliderCheckVal2(val, order, selector)
                 })
-                .on('end', function() { createMagOnMap()});
+                // .on('end', function() { createMagOnMap()});
             break;
         case "votes":
             let minVotes = 0;
@@ -587,7 +599,7 @@ function updateSlider(list_opt) {
                     list_opt["slider_value"] = val;
                     sliderCheckVal2(val, order, selector)
                 })
-                .on('end', function() { createMagOnMap()});
+                // .on('end', function() { createMagOnMap()});
             break;
         default:
     }
@@ -613,7 +625,7 @@ function updateSlider(list_opt) {
         .attr('cx', '10px')
         .attr('cy', '10px')
         .attr('r','10px')
-        .style('fill', 'red')
+        .style('fill', 'red') //TODO: fix with icon
         .on("click", function() { createMagOnMap(); })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
 
     rightMenu.append("span")
@@ -625,79 +637,6 @@ function updateSlider(list_opt) {
 
 };
 
-function updateNameList(list_opt) {
-    let selector = list_opt["type"]
-    var li = list_opt["li"]
-
-    // Value of the type selector
-    console.log(selector.property("value"))
-    let value = selector.property("value");
-
-    li.append("text")
-    .text(value)
-
-    switch (value) {
-        case "actor":
-            list_opt["name"] = actorsList;
-            break;
-        case "director":
-            list_opt["name"] = directorList;
-            break;
-        case "writer":
-            list_opt["name"] = writerList;
-            break;
-        case "company":
-            list_opt["name"] = companyList;
-            break;
-        case "country":
-            list_opt["name"] = countryList;
-            break;
-    }
-
-    var search_div = li.append("div")
-    var namelist = search_div.append("input")
-                           .attr("type", "text")
-                           .attr("placeholder", "Enter the name...")
-                           .on("click", function (e) { d3.selectAll(".autocomp_box").style("display", "none"); 
-                                                        li.select(".autocomp_box").style("display", "block"); 
-                                                        autocomp(e, autocomp_box, list_opt);
-                        })
-                           .on("keyup", (e) => autocomp(e, autocomp_box, list_opt))
-            
-    var autocomp_box = search_div.append("div")
-                                        .attr("class", "autocomp_box")
-                                        .style("display", "none")
-
-    li.append("span")
-                .attr("class", "w3-button w3-display-right")
-                .on("click", function() { li.style("display", "none"); delete list_opt;})
-                .text("x")
-   
-
-                let rightMenu = li.append("span")
-                .attr("class", "w3-button w3-display-right");
-
-
-    // Create a new svg for the new slider
-    let new_magnets = rightMenu.append('svg')
-                            .attr('width', 50)
-                            .attr('height', 30)
-        
-
-    new_magnets.append("circle")
-        .attr('cx', '10px')
-        .attr('cy', '10px')
-        .attr('r','10px')
-        .style("fill", "green")
-        .on("click", function() { createMagOnMap(); })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
-
-    rightMenu.append("span")
-        .attr("class", "w3-button w3-display-right")
-        .on("click", function() { li.style("display", "none"); 
-                            delete list_options[li.property("id")]; 
-                            ; })
-        .text("x")
-}
 
 function updateDblSelectList2(list_opt) {
 
@@ -755,7 +694,7 @@ function updateDblSelectList2(list_opt) {
         .attr('cx', '10px')
         .attr('cy', '10px')
         .attr('r','10px')
-        .style("fill", "yellow") //TODO: fix with random color
+        .style("fill", "yellow") //TODO: fix with icon
         .on("click", function() { createMagOnMap(); })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
 
     rightMenu.append("span")
@@ -766,6 +705,82 @@ function updateDblSelectList2(list_opt) {
         .text("x")
             
 };
+
+function updateNameList(list_opt) {
+    let selector = list_opt["type"]
+    var li = list_opt["li"]
+
+    // Value of the type selector
+    console.log(selector.property("value"))
+    let value = selector.property("value");
+
+    li.append("text")
+    .text(value)
+
+    updateLists(movies1000);
+
+    switch (value) {
+        case "actor":
+            list_opt["name"] = actorsList;
+            break;
+        case "director":
+            list_opt["name"] = directorList;
+            break;
+        case "writer":
+            list_opt["name"] = writerList;
+            break;
+        case "company":
+            list_opt["name"] = companyList;
+            break;
+        case "country":
+            list_opt["name"] = countryList;
+            break;
+    }
+
+    var search_div = li.append("div")
+    var namelist = search_div.append("input")
+                           .attr("type", "text")
+                           .attr("placeholder", "Enter the name...")
+                           .on("click", function (e) { d3.selectAll(".autocomp_box").style("display", "none"); 
+                                                        li.select(".autocomp_box").style("display", "block"); 
+                                                        autocomp(e, autocomp_box, list_opt);
+                        })
+                           .on("keyup", (e) => autocomp(e, autocomp_box, list_opt))
+            
+    var autocomp_box = search_div.append("div")
+                                        .attr("class", "autocomp_box")
+                                        .style("display", "none")
+
+    li.append("span")
+                .attr("class", "w3-button w3-display-right")
+                .on("click", function() { li.style("display", "none"); delete list_opt;})
+                .text("x")
+   
+
+                let rightMenu = li.append("span")
+                .attr("class", "w3-button w3-display-right");
+
+
+    // Create a new svg for the new slider
+    let new_magnets = rightMenu.append('svg')
+                            .attr('width', 50)
+                            .attr('height', 30)
+        
+
+    new_magnets.append("circle")
+        .attr('cx', '10px')
+        .attr('cy', '10px')
+        .attr('r','10px')
+        .style("fill", "green") //TODO: fix with icon
+        .on("click", function() { createMagOnMap(); })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
+
+    rightMenu.append("span")
+        .attr("class", "w3-button w3-display-right")
+        .on("click", function() { li.style("display", "none"); 
+                            delete list_options[li.property("id")]; 
+                            ; })
+        .text("x")
+}
 
 function autocomp(e, autocomp_box, list_opt) {
     autocomp_box.selectAll("li").remove();
@@ -788,7 +803,7 @@ function autocomp(e, autocomp_box, list_opt) {
         //autocomp_box.style("display", "none") //hide autocomplete box
     }
 
-    // console.log(emptyArray);
+    console.log(":::::", emptyArray)
     emptyArray = emptyArray.map((data)=>{
         autocomp_box.append("li")
                     .attr("class", "autocomp-items")
@@ -796,11 +811,46 @@ function autocomp(e, autocomp_box, list_opt) {
                     .text(data)
     });
 
-}
-// TODO: name compare
+    nameCheckVal2(e, list_opt)
 
-function createMagOnMap(){
-    alert("create a mag");
+}
+function nameCheckVal2(e, list_opt){ 
+    let userData = e.target.value; //user enetered data
+
+    let selector = list_opt["type"]
+
+    let value = selector.property("value");
+    let data = [];
+
+    switch (value) {
+        case "actor":
+            movies1000.forEach(function(d,i) {
+                if(d.actor.includes(userData))
+                    data.push(d.id);
+            })
+            break;
+        case "director":
+            movies1000.forEach(function(d,i) {
+                if(d.director.includes(userData))
+                    data.push(d.id);
+            })
+            break;
+        case "writer":
+            movies1000.forEach(function(d,i) {
+                if(d.writer.includes(userData))
+                    data.push(d.id);
+            })
+            break;
+        case "company":
+            movies1000.forEach(function(d,i) {
+                if(d.company.includes(userData))
+                    data.push(d.id);
+            })
+            break;
+    }
+
+    moviesAtt = data;
+    console.log(moviesAtt)
 }
 
 function sliderCheckVal2(val, order, selector){
@@ -942,3 +992,19 @@ function dblCheckVal2(dblselector, selector){
     console.log(moviesAtt);
 }
 
+
+
+// CHECK ME:
+
+function createMap(){ 
+    alert("create a map");
+    console.log(">>>>>>>>", movies1000)
+    //movies1000 are nodes can be shown on map. Adjust the number by changing `max_nodes`
+    //TODO:
+}
+function createMagOnMap(){
+    alert("create a magnet");
+    console.log(">>>>>>>>", moviesAtt)  
+    //moviesAtt contains the index array that will be attracted
+    //TODO: 
+}
