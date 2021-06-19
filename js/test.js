@@ -43,8 +43,8 @@ svg.on('click', (event) => {
 
         d3.select("svg").append('image')
             .attr('id', "magnet" + currentMagnetid.toString())
-            .attr('x', xm)
-            .attr('y', ym)
+            .attr('x', xm-20)
+            .attr('y', ym-20)
             .attr('width', 40)
             .attr('height', 40)
             .attr("xlink:href", "https://img.icons8.com/cotton/64/000000/magnet.png")
@@ -144,8 +144,8 @@ d3.csv("data/movies.csv", function (d, i) {
 
     simulation = d3.forceSimulation(nodes)
         .force('collision', d3.forceCollide().radius(function (d) {
-            return 8
-        }).strength(1.3).iterations(4))
+            return 6
+        }).strength(1.1))
         .on('tick', ticked);
 
 });
@@ -197,38 +197,48 @@ function tooltipText(d) {
     +'<Strong>Gross</Strong>: ' + d.gross + '<br>' 
 }  
 
+
+function magneticForce(alpha){
+    var strength = 0.7;
+    var l = alpha*strength;
+
+    nodes.forEach(d => {        
+        activeMagnets = mapOfMagnet.get(d.id);
+
+        if (activeMagnets.length != 0){
+            let xm = 0;
+            let ym = 0;
+
+            activeMagnets.forEach(magnet_id => {
+                let magnet = magnets.get(magnet_id);
+
+                xm += magnet.x;
+                ym += magnet.y;
+            });
+            xm /= activeMagnets.length;
+            ym /= activeMagnets.length;
+
+            d.x -= (d.x-xm)*l;
+            d.y -= (d.y-ym)*l;            
+        }
+
+    });
+}
+
+
 function apply_magnets() {
 
     simulation.alpha(0.2);
     simulation.nodes(nodes).restart();
 
-    for (var z = 0; z < magnets.size; z = z + 1) {
-        simulation.force(z.toString() + "x", d3.forceX(function (d) {
-            if (mapOfMagnet.get(d.id).includes(z)) { return magnets.get(z).x; }
-            else return d.x;
-        }).strength(1));
-
-        simulation.force(z.toString() + "y", d3.forceY(function (d) {
-            if (mapOfMagnet.get(d.id).includes(z)) { return magnets.get(z).y; }
-            else return d.y;
-        }).strength(1));
-
-
-
-
-    }
-
-
+    
+    simulation.force("zall", magneticForce);
+    
 }
 
 
 function resetMagnets() {
-
-    for (var id = 0; id < magnets.size; id++) {
-        simulation.force(id.toString() + "x", null);
-        simulation.force(id.toString() + "y", null);
-    }
-
+    simulation.force("zall", null);
 }
 
 
