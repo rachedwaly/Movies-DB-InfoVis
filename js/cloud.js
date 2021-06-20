@@ -4,13 +4,8 @@ const width = document.getElementById("container").offsetWidth * 0.95,
     range_max = 50, // Max font size
     max_words = 100 // Max number of words display on the screen
     
-    //fillScale = d3.scaleOrdinal(d3.schemeCategory10); // Build a discrete scale of 10 different colors
 var fillScale;
-
-//var words = []; // All possible words
-//var selected_words = [] // Words to print
-
-var fontScale = d3.scaleLinear().range([5, range_max]); 
+var fontScale; 
 
 // Filter variables
 var ID = 0;
@@ -87,6 +82,9 @@ d3.csv("data/movies.csv", function(d) {
 
     var minSize = d3.min(selected_movies, d => d.filter);
     var maxSize = d3.max(selected_movies, d => d.filter);
+
+
+
     fillScale = d3.scaleLinear().domain([minSize, maxSize])
                     .range(["blue", "red"])
 
@@ -100,15 +98,16 @@ function drawcloud (tmp_movies, rangeMax) { // declare the function
     d3.select("#cloud_container").select("svg").select('g').selectAll('text').remove();
 
     // Compute our fontScale domain
-    var minSize = d3.min(selected_movies, d => d.filter);
+    /*var minSize = d3.min(selected_movies, d => d.filter);
     console.log(minSize);
     var maxSize = d3.max(selected_movies, d => d.filter);
-    console.log(maxSize);
+    console.log(maxSize);*/
 
     console.log("Run");
+    
     fontScale = d3.scaleLinear()
-        .domain([minSize, maxSize]) 
-        .range([5, rangeMax]); // the argument here 
+        .domain([0, list_options.filter(Boolean).length]) 
+        .range([5, rangeMax]);
 
 
     d3.layout.cloud()
@@ -126,7 +125,8 @@ function drawcloud (tmp_movies, rangeMax) { // declare the function
             if (selected_movies.length !== output.length && rangeMax >= 5) {  // compare between input ant output
                 var tmp_movies = [];
                 // Reload the array with new size
-                movies.forEach(function(e,i) {
+                //movies.forEach(function(e,i) {
+                selected_movies.forEach(function(e,i) {
                     //tmp_movies.push({"name": e.name, "filter": e.runtime});
                     tmp_movies.push(e);
                 });
@@ -634,5 +634,10 @@ function updateWeights() {
 
         fillScale = d3.scaleLinear().domain([0, list_options.filter(Boolean).length])
                     .range(["blue", "red"])
+
+        fontScale = d3.scaleLinear()
+                    .domain([0, list_options.filter(Boolean).length]) 
+                    .range([5, range_max]);
+
     }
 }
