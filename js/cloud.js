@@ -187,6 +187,8 @@ function draw(output) {
 
 
 function add() {
+    d3.selectAll(".autocomp_box").style("display", "none");
+
     console.log("OK");
     var select_value = document.getElementById("preset_sentence").value;
     console.log(select_value);
@@ -203,6 +205,7 @@ function add() {
             // Create the type selector (budget, gross, runtime,...)
             var typ = li.append("select")
                 .attr("class", "type")
+                .on("click", () => d3.selectAll(".autocomp_box").style("display", "none"))
                 .on('change', function() { updateSlider(list_options[li.property("id")]); 
                                         updateWeights();
                                         drawcloud(selected_movies, range_max, max_words)})
@@ -217,6 +220,7 @@ function add() {
 
             // Create the order selector (higher than, lower than, equals to)
             var order = li.append("select")
+                .on("click", () => d3.selectAll(".autocomp_box").style("display", "none"))
                 .on('change', function() { updateWeights();
                                         drawcloud(selected_movies, range_max, max_words);})
                 
@@ -241,6 +245,7 @@ function add() {
                 .width(500)
                 .displayValue(true)
                 .on('onchange', (val) => {
+                    d3.selectAll(".autocomp_box").style("display", "none");
                     list_options[li.property("id")]["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights(); 
@@ -260,6 +265,7 @@ function add() {
                 .attr("class", "w3-button w3-display-right")
                 .on("click", function() { li.style("display", "none"); 
                                         delete list_options[li.property("id")];
+                                        d3.selectAll(".autocomp_box").style("display", "none");
                                         updateWeights();
                                         drawcloud(selected_movies, range_max, max_words)})
                 .text("x")
@@ -279,6 +285,7 @@ function add() {
             var typ = li.append("select")
                 .attr("class", "type")
                 .attr("height", 28)
+                .on("click", () => d3.selectAll(".autocomp_box").style("display", "none"))
                 .on('change', function() { updateNamelist(list_options[li.property("id")]);
                                             namelist.property("value", "");
                                             updateWeights();
@@ -311,6 +318,7 @@ function add() {
                 .attr("class", "w3-button w3-display-right")
                 .on("click", function() { li.style("display", "none"); 
                                         delete list_options[li.property("id")];
+                                        d3.selectAll(".autocomp_box").style("display", "none");
                                         updateWeights();
                                         drawcloud(selected_movies, range_max, max_words)})
                 .text("x")
@@ -330,6 +338,7 @@ function add() {
            var typ = li.append("select")
                .attr("class", "type")
                .attr("height", 28)
+               .on("click", () => d3.selectAll(".autocomp_box").style("display", "none"))
                .on('change', function() { updateNamelist(list_options[li.property("id")]);
                                             namelist.property("value", "");
                                             updateWeights();
@@ -362,6 +371,7 @@ function add() {
                .attr("class", "w3-button w3-display-right")
                .on("click", function() { li.style("display", "none"); 
                                         delete list_options[li.property("id")];
+                                        d3.selectAll(".autocomp_box").style("display", "none")
                                         updateWeights();
                                         drawcloud(selected_movies, range_max, max_words)})
                .text("x")
@@ -415,6 +425,7 @@ function updateSlider(list_opt) {
                 .width(500)
                 .displayValue(true)
                 .on('onchange', (val) => {
+                    d3.selectAll(".autocomp_box").style("display", "none");
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
@@ -432,6 +443,7 @@ function updateSlider(list_opt) {
                 .width(500)
                 .displayValue(true)
                 .on('onchange', (val) => {
+                    d3.selectAll(".autocomp_box").style("display", "none");
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
@@ -448,6 +460,7 @@ function updateSlider(list_opt) {
                 .width(500)
                 .displayValue(true)
                 .on('onchange', (val) => {
+                    d3.selectAll(".autocomp_box").style("display", "none");
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
@@ -464,6 +477,7 @@ function updateSlider(list_opt) {
                 .width(500)
                 .displayValue(true)
                 .on('onchange', (val) => {
+                    d3.selectAll(".autocomp_box").style("display", "none");
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
@@ -481,6 +495,7 @@ function updateSlider(list_opt) {
                 .ticks(5)
                 .displayValue(true)
                 .on('onchange', (val) => {
+                    d3.selectAll(".autocomp_box").style("display", "none");
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
@@ -562,6 +577,7 @@ function autocomp(e, autocomp_box, list_opt) {
 }
 
 function updateWeights() {
+
     // Reinitialize filter weights
     d3.map(movies, function(d){d.filter = 0;})
 
