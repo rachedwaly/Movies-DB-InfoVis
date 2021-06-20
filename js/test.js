@@ -134,13 +134,7 @@ d3.csv("data/movies.csv", function (d, i) {
 
     nodes = csv.slice(0, 1000);
 
-
-
-     
-
-
     initializeMap(csv);
-
 
     simulation = d3.forceSimulation(nodes)
         .force('collision', d3.forceCollide().radius(function (d) {

@@ -9,7 +9,7 @@
         <script src="https://cdn.jsdelivr.net/npm/d3-time-format@4"></script>
         <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
         <link rel="stylesheet" href="css/magnets_style.css">
-        
+        <link rel="stylesheet" href="css/tooltip.css">
     </head>
     <body id="container">
         <div id="first_filter">
@@ -56,7 +56,12 @@
             
             <div id="magnets_container"></div>  
             
-        </div>     
+        </div>
+        
+        <div id="tooltip" style="position:absolute; visibility:hidden">
+            <p style="color:blue"><strong>Movie information</strong></p>
+            <p><span id="info"></span></p>
+        </div>
 
         <script type="text/javascript" src="js/magnets_filter.js"></script>
     </body>
