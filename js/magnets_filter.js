@@ -757,7 +757,7 @@ function updateNameList(list_opt) {
                 .text("x")
    
 
-                let rightMenu = li.append("span")
+    let rightMenu = li.append("span")
                 .attr("class", "w3-button w3-display-right");
 
 
@@ -814,36 +814,38 @@ function autocomp(e, autocomp_box, list_opt) {
     nameCheckVal2(e, list_opt)
 
 }
+
 function nameCheckVal2(e, list_opt){ 
     let userData = e.target.value; //user enetered data
+    userData = userData.toLocaleLowerCase(); 
 
     let selector = list_opt["type"]
-
     let value = selector.property("value");
     let data = [];
 
     switch (value) {
         case "actor":
             movies1000.forEach(function(d,i) {
-                if(d.actor.includes(userData))
+                if(d.star.toLocaleLowerCase().includes(userData) ){                   
                     data.push(d.id);
+                }
             })
             break;
         case "director":
             movies1000.forEach(function(d,i) {
-                if(d.director.includes(userData))
+                if(d.director.toLocaleLowerCase().includes(userData))
                     data.push(d.id);
             })
             break;
         case "writer":
             movies1000.forEach(function(d,i) {
-                if(d.writer.includes(userData))
+                if(d.writer.toLocaleLowerCase().includes(userData))
                     data.push(d.id);
             })
             break;
         case "company":
             movies1000.forEach(function(d,i) {
-                if(d.company.includes(userData))
+                if(d.company.toLocaleLowerCase().includes(userData))
                     data.push(d.id);
             })
             break;
