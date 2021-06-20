@@ -2,7 +2,7 @@ const width = document.getElementById("container").offsetWidth * 0.95,
     height = 800,
     fontFamily = "Open Sans",
     range_max = 30, // Max font size
-    max_words = 70 // Max number of words display on the screen
+    max_words = 100 // Max number of words display on the screen
     
 var fillScale;
 var fontScale; 
