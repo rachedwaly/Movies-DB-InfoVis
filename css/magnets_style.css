@@ -1,0 +1,70 @@
+.italique {
+    font-style: italic;
+}
+
+#cloud_container {
+    padding: 10px;
+}
+
+#presets {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    background-color: aliceblue;
+    width: 100%;
+}
+
+a {
+    margin-left: auto;
+    margin-right: 10px;
+}
+
+#preset_sentence {
+    height: 38px;
+    margin: 10px 0 10px 10px;;
+}
+
+#sentences {
+    overflow: auto;
+    height: 200px;
+    width: 100%;
+    background-color:aliceblue;
+}
+
+#list_sentences {
+    padding: 0px;
+}
+
+
+.autocomp_box {
+    overflow-y: scroll;
+    position: absolute;
+    z-index: 9;
+    background-color: white;
+    width: 200px;
+    height: auto;
+    max-height: 100px;
+}
+
+.autocomp_box li{
+    list-style: none;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.autocomp-items:hover {
+    background-color:lightgrey;
+}
+
+.w3-display-container {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    position: relative;
+}
+
+select {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
