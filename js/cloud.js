@@ -1,8 +1,8 @@
 const width = document.getElementById("container").offsetWidth * 0.95,
     height = 800,
     fontFamily = "Open Sans",
-    range_max = 50, // Max font size
-    max_words = 100 // Max number of words display on the screen
+    range_max = 30, // Max font size
+    max_words = 70 // Max number of words display on the screen
     
 var fillScale;
 var fontScale; 
@@ -19,6 +19,7 @@ var directorList = []
 var writerList = []
 var companyList = []
 var countryList = []
+var genreList = []
 
 //d3.select("body").on("click", function () { d3.selectAll(".autocomp_box").style("display", "none"); })
 
@@ -58,6 +59,7 @@ d3.csv("data/movies.csv", function(d) {
         writerList.push(d.writer);
         companyList.push(d.company);
         countryList.push(d.country);
+        genreList.push(d.genre);
     });
 
     // Keep unique values
@@ -66,6 +68,7 @@ d3.csv("data/movies.csv", function(d) {
     writerList = writerList.filter((v, i, a) => a.indexOf(v) === i);
     companyList = companyList.filter((v, i, a) => a.indexOf(v) === i);
     countryList = countryList.filter((v, i, a) => a.indexOf(v) === i);
+    genreList = genreList.filter((v, i, a) => a.indexOf(v) === i);
 
     // Sort in alphabetical order
     actorsList.sort();
@@ -73,6 +76,7 @@ d3.csv("data/movies.csv", function(d) {
     writerList.sort();
     companyList.sort();
     countryList.sort();
+    genreList.sort();
 
     //selected_words = [...words];
     //selected_words.length = max_words; // Print only max_words words
@@ -89,11 +93,11 @@ d3.csv("data/movies.csv", function(d) {
                     .range(["blue", "red"])
 
     // Draw the cloud words
-    drawcloud(selected_movies, range_max); 
+    drawcloud(selected_movies, range_max, max_words); 
 });
 
 // The function looks for the max range of the font that allows the display of all words of tmp_movies
-function drawcloud (tmp_movies, rangeMax) { // declare the function
+function drawcloud (tmp_movies, rangeMax, maxWords) { // declare the function
     // Delete the previous cloud if exists
     d3.select("#cloud_container").select("svg").select('g').selectAll('text').remove();
 
@@ -104,6 +108,9 @@ function drawcloud (tmp_movies, rangeMax) { // declare the function
     console.log(maxSize);*/
 
     console.log("Run");
+
+    console.log("range : " + rangeMax);
+    console.log("nbr words : " + maxWords);
     
     fontScale = d3.scaleLinear()
         .domain([0, list_options.filter(Boolean).length]) 
@@ -122,7 +129,9 @@ function drawcloud (tmp_movies, rangeMax) { // declare the function
         .fontSize(d => fontScale(d.filter))
         .text(function(d) { return d.name})
         .on("end", function(output) {
-            if (selected_movies.length !== output.length && rangeMax >= 5) {  // compare between input ant output
+            if (output.length !== maxWords && rangeMax > 5) {  // compare between input ant output
+                console.log("font size")
+                console.log(output.length);
                 var tmp_movies = [];
                 // Reload the array with new size
                 //movies.forEach(function(e,i) {
@@ -130,11 +139,24 @@ function drawcloud (tmp_movies, rangeMax) { // declare the function
                     //tmp_movies.push({"name": e.name, "filter": e.runtime});
                     tmp_movies.push(e);
                 });
-                tmp_movies.length = max_words;
-                console.log(rangeMax);
-                drawcloud (tmp_movies, rangeMax - 5); // call the function recursively
+                tmp_movies.length = maxWords;
+                drawcloud (tmp_movies, rangeMax - 5, maxWords); // call the function recursively
             }
-            else { 
+            else if (rangeMax == 5) {
+                console.log("less words")
+                var tmp_movies = [];
+                // Reload the array with new size
+                //movies.forEach(function(e,i) {
+                selected_movies.forEach(function(e,i) {
+                    //tmp_movies.push({"name": e.name, "filter": e.runtime});
+                    tmp_movies.push(e);
+                });
+                tmp_movies.length = maxWords - 5;
+                drawcloud(tmp_movies, range_max, maxWords - 20)
+            } 
+            else
+            { 
+                console.log("draw")
                 console.log(output.length);
                 draw(output); 
             }     // when all words are included, start rendering
@@ -183,7 +205,7 @@ function add() {
                 .attr("class", "type")
                 .on('change', function() { updateSlider(list_options[li.property("id")]); 
                                         updateWeights();
-                                        drawcloud(selected_movies, range_max)})
+                                        drawcloud(selected_movies, range_max, max_words)})
             
             // Add options into the selector
             typ.selectAll("option")
@@ -196,7 +218,7 @@ function add() {
             // Create the order selector (higher than, lower than, equals to)
             var order = li.append("select")
                 .on('change', function() { updateWeights();
-                                        drawcloud(selected_movies, range_max);})
+                                        drawcloud(selected_movies, range_max, max_words);})
                 
             order.selectAll("option")
                 .data(["higher than", "equals to", "lower than"])
@@ -222,7 +244,7 @@ function add() {
                     list_options[li.property("id")]["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights(); 
-                                        drawcloud(selected_movies, range_max)});
+                                        drawcloud(selected_movies, range_max, max_words)});
 
             // Create the svg component for the slider
             var slider_component = li.append('svg')
@@ -239,7 +261,7 @@ function add() {
                 .on("click", function() { li.style("display", "none"); 
                                         delete list_options[li.property("id")];
                                         updateWeights();
-                                        drawcloud(selected_movies, range_max)})
+                                        drawcloud(selected_movies, range_max, max_words)})
                 .text("x")
 
             // Store new selectors
@@ -260,7 +282,7 @@ function add() {
                 .on('change', function() { updateNamelist(list_options[li.property("id")]);
                                             namelist.property("value", "");
                                             updateWeights();
-                                            drawcloud(selected_movies, range_max)})
+                                            drawcloud(selected_movies, range_max, max_words)})
             
             // Add options into the selector
             typ.selectAll("option")
@@ -290,7 +312,7 @@ function add() {
                 .on("click", function() { li.style("display", "none"); 
                                         delete list_options[li.property("id")];
                                         updateWeights();
-                                        drawcloud(selected_movies, range_max)})
+                                        drawcloud(selected_movies, range_max, max_words)})
                 .text("x")
 
             // Store new selectors
@@ -311,11 +333,11 @@ function add() {
                .on('change', function() { updateNamelist(list_options[li.property("id")]);
                                             namelist.property("value", "");
                                             updateWeights();
-                                            drawcloud(selected_movies, range_max)})
+                                            drawcloud(selected_movies, range_max, max_words)})
            
            // Add options into the selector
            typ.selectAll("option")
-               .data(["company", "country"])
+               .data(["company", "country", "genre"])
                .enter()
                .append("option")
                .text(function(d){return d;})
@@ -341,7 +363,7 @@ function add() {
                .on("click", function() { li.style("display", "none"); 
                                         delete list_options[li.property("id")];
                                         updateWeights();
-                                        drawcloud(selected_movies, range_max)})
+                                        drawcloud(selected_movies, range_max, max_words)})
                .text("x")
 
            // Store new selectors
@@ -396,7 +418,7 @@ function updateSlider(list_opt) {
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
-                                        drawcloud(selected_movies, range_max)});
+                                        drawcloud(selected_movies, range_max, max_words)});
             break;
         case "gross":
             let minGross = 0;
@@ -413,7 +435,7 @@ function updateSlider(list_opt) {
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
-                                        drawcloud(selected_movies, range_max)});
+                                        drawcloud(selected_movies, range_max, max_words)});
             break;
         case "runtime":
             let minRuntime = d3.min(movies, d => d.runtime);
@@ -429,7 +451,7 @@ function updateSlider(list_opt) {
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
-                                        drawcloud(selected_movies, range_max)});
+                                        drawcloud(selected_movies, range_max, max_words)});
             break;
         case "score":
             let minScore = 0;
@@ -445,7 +467,7 @@ function updateSlider(list_opt) {
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
-                                        drawcloud(selected_movies, range_max)});
+                                        drawcloud(selected_movies, range_max, max_words)});
             break;
         case "votes":
             let minVotes = 0;
@@ -462,7 +484,7 @@ function updateSlider(list_opt) {
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
-                                        drawcloud(selected_movies, range_max)});
+                                        drawcloud(selected_movies, range_max, max_words)});
             break;
         default:
     }
@@ -498,6 +520,9 @@ function updateNamelist(list_opt) {
         case "country":
             list_opt["name"] = countryList;
             break;
+        case "genre":
+            list_opt["name"] = genreList;
+            break;
     }
 }
 
@@ -531,7 +556,7 @@ function autocomp(e, autocomp_box, list_opt) {
                                             autocomp_box.selectAll("li").remove(); 
                                             autocomp_box.style("display", "none"); 
                                             updateWeights(); 
-                                            drawcloud(selected_movies, range_max)})
+                                            drawcloud(selected_movies, range_max, max_words)})
                     .text(data)
     });
 }
@@ -623,8 +648,9 @@ function updateWeights() {
                     d3.map(movies.filter(function(d){ return d.company == name }), function(d) {d.filter += 1})
                 } else if (typ.property("value") == "country") {
                     d3.map(movies.filter(function(d){ return d.country == name }), function(d) {d.filter += 1})
+                } else if (typ.property("value") == "genre") {
+                    d3.map(movies.filter(function(d){ return d.genre == name }), function(d) {d.filter += 1})
                 }
-
             
                 break;
         }
