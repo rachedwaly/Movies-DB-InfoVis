@@ -21,8 +21,6 @@ var companyList = []
 var countryList = []
 var genreList = []
 
-//d3.select("body").on("click", function () { d3.selectAll(".autocomp_box").style("display", "none"); })
-
 var svg_g = d3.select("#cloud_container").append("svg") // Ajout d'un élément SVG sur un DIV existant de la page
             .attr("class", "svg")
             .attr("width", width)
@@ -78,8 +76,6 @@ d3.csv("data/movies.csv", function(d) {
     countryList.sort();
     genreList.sort();
 
-    //selected_words = [...words];
-    //selected_words.length = max_words; // Print only max_words words
     selected_movies = [...movies];
     selected_movies.length = max_words; // Print only max_words words
     console.log(csv[20]);    
@@ -93,19 +89,13 @@ d3.csv("data/movies.csv", function(d) {
                     .range(["blue", "red"])
 
     // Draw the cloud words
-    drawcloud(selected_movies, range_max, max_words); 
+    drawcloud(selected_movies, range_max, max_words);
 });
 
 // The function looks for the max range of the font that allows the display of all words of tmp_movies
 function drawcloud (tmp_movies, rangeMax, maxWords) { // declare the function
     // Delete the previous cloud if exists
     d3.select("#cloud_container").select("svg").select('g').selectAll('text').remove();
-
-    // Compute our fontScale domain
-    /*var minSize = d3.min(selected_movies, d => d.filter);
-    console.log(minSize);
-    var maxSize = d3.max(selected_movies, d => d.filter);
-    console.log(maxSize);*/
 
     console.log("Run");
 
@@ -177,16 +167,33 @@ function draw(output) {
                 .style("fill", d => fillScale(d.filter))
                 .attr("text-anchor", "middle")
                 .attr("transform", d => "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")")
-                .text(d => d.name);
-    /*text.exit()
-        .transition() // and apply changes to all of them
-        .duration(500)
-        .style("opacity", 0)
-        .remove();*/
+                .text(d => d.name)
+
+    d3.selectAll("text").on("mouseover", function(event, d) { d3.select("#info").style("display", "block");
+                                                                d3.select("#info").html(tooltipText(d))})
+                        .on("mouseout", function(event, d) { d3.select("#info").style("display", "none")})
+            
+
 };
 
+function tooltipText(d) {
+    return '<Strong>Title</Strong>: ' + d.name + '<br>' 
+    +'<Strong>Year</Strong>: ' + d.year + '<br>'
+    +'<Strong>Genre</Strong>: ' + d.genre + '<br>' 
+    +'<Strong>Country</Strong>: ' + d.country + '<br>'
+    +'<Strong>Company</Strong>: ' + d.company + '<br>'
+    +'<Strong>Director</Strong>: ' + d.director + '<br>' 
+    +'<Strong>Writer</Strong>: ' + d.writer + '<br>' 
+    +'<Strong>Star</Strong>: ' + d.star + '<br>'  
+    +'<Strong>Budget</Strong>: ' + d.budget + '<br>' 
+    +'<Strong>Gross</Strong>: ' + d.gross + '<br>' 
+    +'<Strong>Rating</Strong>: ' + d.rating + '<br>' 
+    +'<Strong>Score in IMBD</Strong>: ' + d.score + '<br>'
+}  
 
 function add() {
+    d3.selectAll(".autocomp_box").style("display", "none");
+
     console.log("OK");
     var select_value = document.getElementById("preset_sentence").value;
     console.log(select_value);
@@ -203,6 +210,7 @@ function add() {
             // Create the type selector (budget, gross, runtime,...)
             var typ = li.append("select")
                 .attr("class", "type")
+                .on("click", () => d3.selectAll(".autocomp_box").style("display", "none"))
                 .on('change', function() { updateSlider(list_options[li.property("id")]); 
                                         updateWeights();
                                         drawcloud(selected_movies, range_max, max_words)})
@@ -217,6 +225,7 @@ function add() {
 
             // Create the order selector (higher than, lower than, equals to)
             var order = li.append("select")
+                .on("click", () => d3.selectAll(".autocomp_box").style("display", "none"))
                 .on('change', function() { updateWeights();
                                         drawcloud(selected_movies, range_max, max_words);})
                 
@@ -241,6 +250,7 @@ function add() {
                 .width(500)
                 .displayValue(true)
                 .on('onchange', (val) => {
+                    d3.selectAll(".autocomp_box").style("display", "none");
                     list_options[li.property("id")]["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights(); 
@@ -256,13 +266,6 @@ function add() {
                 .attr('transform', 'translate(30,30)')
                 .call(budget_slider);
             
-            li.append("span")
-                .attr("class", "w3-button w3-display-right")
-                .on("click", function() { li.style("display", "none"); 
-                                        delete list_options[li.property("id")];
-                                        updateWeights();
-                                        drawcloud(selected_movies, range_max, max_words)})
-                .text("x")
 
             // Store new selectors
             list_options[ID.toString()] = {"value": select_value, "li": li, "type": typ, "order": order, "slider": slider_component, "slider_value": budget_slider.value()};
@@ -279,6 +282,7 @@ function add() {
             var typ = li.append("select")
                 .attr("class", "type")
                 .attr("height", 28)
+                .on("click", () => d3.selectAll(".autocomp_box").style("display", "none"))
                 .on('change', function() { updateNamelist(list_options[li.property("id")]);
                                             namelist.property("value", "");
                                             updateWeights();
@@ -307,13 +311,6 @@ function add() {
                                         .attr("class", "autocomp_box")
                                         .style("display", "none")
 
-            li.append("span")
-                .attr("class", "w3-button w3-display-right")
-                .on("click", function() { li.style("display", "none"); 
-                                        delete list_options[li.property("id")];
-                                        updateWeights();
-                                        drawcloud(selected_movies, range_max, max_words)})
-                .text("x")
 
             // Store new selectors
             list_options[ID.toString()] = {"value": select_value, "li": li, "type": typ, "name": actorsList};
@@ -330,6 +327,7 @@ function add() {
            var typ = li.append("select")
                .attr("class", "type")
                .attr("height", 28)
+               .on("click", () => d3.selectAll(".autocomp_box").style("display", "none"))
                .on('change', function() { updateNamelist(list_options[li.property("id")]);
                                             namelist.property("value", "");
                                             updateWeights();
@@ -358,27 +356,24 @@ function add() {
                                        .attr("class", "autocomp_box")
                                        .style("display", "none")
 
-           li.append("span")
-               .attr("class", "w3-button w3-display-right")
-               .on("click", function() { li.style("display", "none"); 
-                                        delete list_options[li.property("id")];
-                                        updateWeights();
-                                        drawcloud(selected_movies, range_max, max_words)})
-               .text("x")
 
            // Store new selectors
            list_options[ID.toString()] = {"value": select_value, "li": li, "type": typ, "name": companyList};
            break;
     }
+
+    li.append("span")
+    .attr("class", "w3-button w3-display-right")
+    .style("background-color", "lightgrey")
+    .on("click", function() { li.style("display", "none"); 
+                             delete list_options[li.property("id")];
+                             d3.selectAll(".autocomp_box").style("display", "none")
+                             updateWeights();
+                             drawcloud(selected_movies, range_max, max_words)})
+    .text("x")
     // Increment the id variable
     ID += 1
-              
-        /*var options = dropDown.selectAll("option")
-            .data(d3.map(movies, function(d){return d.company;}).values())
-            .enter()
-            .append("option")
-            .text(function(d){return d;})
-            .attr("value",function(d){return d;});*/
+
 };
 
 function updateSlider(list_opt) {
@@ -415,6 +410,7 @@ function updateSlider(list_opt) {
                 .width(500)
                 .displayValue(true)
                 .on('onchange', (val) => {
+                    d3.selectAll(".autocomp_box").style("display", "none");
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
@@ -432,6 +428,7 @@ function updateSlider(list_opt) {
                 .width(500)
                 .displayValue(true)
                 .on('onchange', (val) => {
+                    d3.selectAll(".autocomp_box").style("display", "none");
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
@@ -448,6 +445,7 @@ function updateSlider(list_opt) {
                 .width(500)
                 .displayValue(true)
                 .on('onchange', (val) => {
+                    d3.selectAll(".autocomp_box").style("display", "none");
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
@@ -464,6 +462,7 @@ function updateSlider(list_opt) {
                 .width(500)
                 .displayValue(true)
                 .on('onchange', (val) => {
+                    d3.selectAll(".autocomp_box").style("display", "none");
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
@@ -481,6 +480,7 @@ function updateSlider(list_opt) {
                 .ticks(5)
                 .displayValue(true)
                 .on('onchange', (val) => {
+                    d3.selectAll(".autocomp_box").style("display", "none");
                     list_opt["slider_value"] = val;
                 })
                 .on('end', function() { updateWeights();
@@ -541,12 +541,9 @@ function autocomp(e, autocomp_box, list_opt) {
             //filtering array value and user characters to lowercase and return only those words which are start with user enetered chars
             return data.toLocaleLowerCase().startsWith(userData.toLocaleLowerCase()); 
         });
-        //console.log(emptyArray)
         
-        //autocomp_box.style("display", "block") //show autocomplete box
     } else{
         emptyArray = suggestions;
-        //autocomp_box.style("display", "none") //hide autocomplete box
     }
 
     emptyArray = emptyArray.map((data)=>{
@@ -562,6 +559,7 @@ function autocomp(e, autocomp_box, list_opt) {
 }
 
 function updateWeights() {
+
     // Reinitialize filter weights
     d3.map(movies, function(d){d.filter = 0;})
 
