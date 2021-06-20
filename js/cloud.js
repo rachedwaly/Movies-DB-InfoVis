@@ -83,9 +83,7 @@ d3.csv("data/movies.csv", function(d) {
     var minSize = d3.min(selected_movies, d => d.filter);
     var maxSize = d3.max(selected_movies, d => d.filter);
 
-    fontScale = d3.scaleLinear()
-        .domain([0, maxSize]) 
-        .range([5, rangeMax]); // the argument here 
+
 
     fillScale = d3.scaleLinear().domain([minSize, maxSize])
                     .range(["blue", "red"])
@@ -128,7 +126,7 @@ function drawcloud (tmp_movies, rangeMax) { // declare the function
                 var tmp_movies = [];
                 // Reload the array with new size
                 //movies.forEach(function(e,i) {
-                selected_movies.movies.forEach(function(e,i) {
+                selected_movies.forEach(function(e,i) {
                     //tmp_movies.push({"name": e.name, "filter": e.runtime});
                     tmp_movies.push(e);
                 });
@@ -639,7 +637,7 @@ function updateWeights() {
 
         fontScale = d3.scaleLinear()
                     .domain([0, list_options.filter(Boolean).length]) 
-                    .range([5, rangeMax]);
+                    .range([5, range_max]);
 
     }
 }
