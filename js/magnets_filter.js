@@ -28,10 +28,13 @@ var flag = 0;
 var isDragingMagnet = false;
 var draged_magnetID = -1;
 var simulation;
-var currentMagnetid = -1; //will be use to add a certain magnet inside the svg
+var currentMagnetid = 0; //will be use to add a certain magnet inside the svg
 var mapOfMagnet = new Map();
 var list = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100];
 var fillScale = d3.scaleLinear().domain([0, 1]).range(["blue", "red"]);
+let fillScaleMag = d3.scaleSequential()
+.domain([0, 10])
+.interpolator(d3.interpolateRainbow);
 
 let container=d3.select("body").append("div").attr('id',"container");
 
@@ -53,20 +56,20 @@ svg.on('click', (event) => {
 
         //push to magnets' list  the caracteristics of the magnet => x,y
 
-        currentMagnetid += 1;
         magnets.set(currentMagnetid, { x: xm, y: ym });
 
-        svg.append('image')
-            .attr('id', "magnet" + currentMagnetid.toString())
-            .attr('x', xm-20)
-            .attr('y', ym-20)
-            .attr('width', 40)
-            .attr('height', 40)
-            .attr("xlink:href", "https://img.icons8.com/cotton/64/000000/magnet.png")
-            .attr('fill', '#69a3b2')
-            .call(d3.drag().on("start", dragstarted)
+        svg.append("rect")
+        .attr('id', "magnet" + currentMagnetid.toString())
+        .attr('x', xm-20)
+        .attr('y', ym-20)
+        .attr('width', 20)
+        .attr('height', 20)
+        .style("fill", fillScaleMag(currentMagnetid))
+        .call(d3.drag().on("start", dragstarted)
                            .on("drag", dragged)
                            .on("end", dragended));
+
+
         //fill the mapofmagnet
         //update list
 
@@ -76,6 +79,8 @@ svg.on('click', (event) => {
         update_colors();
 
         switchTo(0);
+
+        currentMagnetid += 1;
 
     }
 });
@@ -838,13 +843,21 @@ function updateSlider2(list_opt) {
                             .attr('width', 50)
                             .attr('height', 30)
         
-
-    new_magnets.append("circle")
-        .attr('cx', '10px')
-        .attr('cy', '10px')
-        .attr('r','10px')
-        .style('fill', 'red') //TODO: fix with icon
-        .on("click", function() { createMagOnMap(); })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
+    
+    let rect = new_magnets.append("rect")
+        .attr('x', '0px')
+        .attr('y', '5px')
+        .attr('width','20px')
+        .attr('height','20px')
+        .style('fill', fillScaleMag(currentMagnetid)) //TODO: fix with icon
+        .on("click", function() { 
+            list_opt["slider"].remove();
+            order.attr("disabled", "disabled") 
+            li.append("text")
+                .text(list_opt["slider_value"])
+            
+            createMagOnMap(rect); 
+        })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
 
     rightMenu.append("span")
         .attr("class", "w3-button w3-display-right")
@@ -908,12 +921,17 @@ function updateDblSelectList2(list_opt) {
                             .attr('height', 30)
         
 
-    new_magnets.append("circle")
-        .attr('cx', '10px')
-        .attr('cy', '10px')
-        .attr('r','10px')
-        .style("fill", "yellow") //TODO: fix with icon
-        .on("click", function() { createMagOnMap(); })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
+    let rect = new_magnets.append("rect")
+        .attr('x', '0px')
+        .attr('y', '5px')
+        .attr('width','20px')
+        .attr('height','20px')
+        .style('fill', fillScaleMag(currentMagnetid)) //TODO: fix with icon
+        .on("click", function() { 
+            dblSelector.attr("disabled", "disabled")             
+            createMagOnMap(rect); 
+        })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
+
 
     rightMenu.append("span")
         .attr("class", "w3-button w3-display-right")
@@ -955,6 +973,7 @@ function updateNameList(list_opt) {
             break;
     }
 
+
     var search_div = li.append("div")
     var namelist = search_div.append("input")
                            .attr("type", "text")
@@ -968,6 +987,8 @@ function updateNameList(list_opt) {
     var autocomp_box = search_div.append("div")
                                         .attr("class", "autocomp_box")
                                         .style("display", "none")
+
+    list_opt["input"] = namelist;
 
     li.append("span")
                 .attr("class", "w3-button w3-display-right")
@@ -984,13 +1005,18 @@ function updateNameList(list_opt) {
                             .attr('width', 50)
                             .attr('height', 30)
         
+    let rect = new_magnets.append("rect")
+        .attr('x', '0px')
+        .attr('y', '5px')
+        .attr('width','20px')
+        .attr('height','20px')
+        .style('fill', fillScaleMag(currentMagnetid)) //TODO: fix with icon
+        .on("click", function() { 
+            namelist.attr("disabled", "disabled");
+            nameCheckVal2(list_opt);           
+            createMagOnMap(rect); 
+        })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
 
-    new_magnets.append("circle")
-        .attr('cx', '10px')
-        .attr('cy', '10px')
-        .attr('r','10px')
-        .style("fill", "green") //TODO: fix with icon
-        .on("click", function() { createMagOnMap(); })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
 
     rightMenu.append("span")
         .attr("class", "w3-button w3-display-right")
@@ -1021,7 +1047,7 @@ function autocomp(e, autocomp_box, list_opt) {
         //autocomp_box.style("display", "none") //hide autocomplete box
     }
 
-    console.log(":::::", emptyArray)
+    //console.log(":::::", emptyArray)
     emptyArray = emptyArray.map((data)=>{
         autocomp_box.append("li")
                     .attr("class", "autocomp-items")
@@ -1029,13 +1055,15 @@ function autocomp(e, autocomp_box, list_opt) {
                     .text(data)
     });
 
-    nameCheckVal2(e, list_opt)
+    nameCheckVal2(list_opt)
 
 }
 
-function nameCheckVal2(e, list_opt){ 
-    let userData = e.target.value; //user enetered data
+function nameCheckVal2(list_opt){ 
+    let userData = list_opt['input'].property("value"); //user enetered data
+
     userData = userData.toLocaleLowerCase(); 
+    console.log("----->", userData)
 
     let selector = list_opt["type"]
     let value = selector.property("value");
@@ -1224,19 +1252,18 @@ function createMap(){
         
     nodes = movies1000;
 
-    
-
     simulation = d3.forceSimulation(nodes)
         .force('collision', d3.forceCollide().radius(function (d) {
             return 6
         }).strength(1.1))
         .on('tick', ticked);
 }
-function createMagOnMap(){
+function createMagOnMap(rect){
     alert("create a magnet");
     console.log(">>>>>>>>", moviesAtt); 
     //moviesAtt contains the index array that will be attracted
     //TODO: 
+    rect.on("click", null);
     list = moviesAtt;
     switchTo(1);
 
