@@ -62,8 +62,8 @@ svg.on('click', (event) => {
         .attr('id', "magnet" + currentMagnetid.toString())
         .attr('x', xm-20)
         .attr('y', ym-20)
-        .attr('width', 10)
-        .attr('height', 10)
+        .attr('width', 20)
+        .attr('height', 20)
         .style("fill", fillScaleMag(currentMagnetid))
         .call(d3.drag().on("start", dragstarted)
                            .on("drag", dragged)
@@ -843,12 +843,12 @@ function updateSlider2(list_opt) {
                             .attr('width', 50)
                             .attr('height', 30)
         
-
+    
     let rect = new_magnets.append("rect")
-        .attr('x', '10px')
-        .attr('y', '10px')
-        .attr('width','10px')
-        .attr('height','10px')
+        .attr('x', '0px')
+        .attr('y', '5px')
+        .attr('width','20px')
+        .attr('height','20px')
         .style('fill', fillScaleMag(currentMagnetid)) //TODO: fix with icon
         .on("click", function() { 
             list_opt["slider"].remove();
@@ -922,10 +922,10 @@ function updateDblSelectList2(list_opt) {
         
 
     let rect = new_magnets.append("rect")
-        .attr('x', '10px')
-        .attr('y', '10px')
-        .attr('width','10px')
-        .attr('height','10px')
+        .attr('x', '0px')
+        .attr('y', '5px')
+        .attr('width','20px')
+        .attr('height','20px')
         .style('fill', fillScaleMag(currentMagnetid)) //TODO: fix with icon
         .on("click", function() { 
             dblSelector.attr("disabled", "disabled")             
@@ -1006,10 +1006,10 @@ function updateNameList(list_opt) {
                             .attr('height', 30)
         
     let rect = new_magnets.append("rect")
-        .attr('x', '10px')
-        .attr('y', '10px')
-        .attr('width','10px')
-        .attr('height','10px')
+        .attr('x', '0px')
+        .attr('y', '5px')
+        .attr('width','20px')
+        .attr('height','20px')
         .style('fill', fillScaleMag(currentMagnetid)) //TODO: fix with icon
         .on("click", function() { 
             namelist.attr("disabled", "disabled");
