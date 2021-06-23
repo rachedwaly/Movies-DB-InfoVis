@@ -114,7 +114,7 @@ function drawcloud (tmp_movies, rangeMax, maxWords) { // declare the function
             return 0;
         })
         .spiral("archimedean")
-        .font(fontFamily)
+        .font("Open Sans")
         .fontSize(d => fontScale(d.filter))
         .text(function(d) { return d.name})
         .on("end", function(output) {
