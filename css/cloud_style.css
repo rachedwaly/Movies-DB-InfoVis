@@ -1,3 +1,5 @@
+@import url(//fonts.googleapis.com/css?family=Open+Sans);
+
 .italique {
     font-style: italic;
 }
@@ -107,4 +109,5 @@ input {
 
 text {
     cursor: default;
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
 }

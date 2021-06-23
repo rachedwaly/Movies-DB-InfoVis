@@ -192,17 +192,17 @@ function ticked() {
 
 function tooltipText(d) {
     return '<Strong>Title</Strong>: ' + d.name + '<br>' 
+    +'<Strong>Released</Strong>: ' + d.released + '<br>'
+    +'<Strong>Genre</Strong>: ' + d.genre + '<br>' 
+    +'<Strong>Country</Strong>: ' + d.country + '<br>'
+    +'<Strong>Company</Strong>: ' + d.company + '<br>'
     +'<Strong>Director</Strong>: ' + d.director + '<br>' 
     +'<Strong>Writer</Strong>: ' + d.writer + '<br>' 
-    +'<Strong>Star</Strong>: ' + d.star + '<br>' 
-    +'<Strong>Company</Strong>: ' + d.company + '<br>' 
-    +'<Strong>Genre</Strong>: ' + d.genre + '<br>' 
+    +'<Strong>Star</Strong>: ' + d.star + '<br>'  
+    +'<Strong>Budget</Strong>: ' + numeral(d.budget).format('0,0[.]00 $') + '<br>' 
+    +'<Strong>Gross</Strong>: ' + numeral(d.gross).format('0,0[.]00 $') + '<br>' 
     +'<Strong>Rating</Strong>: ' + d.rating + '<br>' 
-    +'<Strong>Score in IMBD</Strong>: ' + d.score + '<br>' 
-    +'<Strong>Budget</Strong>: ' + d.budget + '<br>' 
-    +'<Strong>Title</Strong>: ' + d.name + '<br>' 
-    +'<Strong>Year</Strong>: ' + d.year + '<br>' 
-    +'<Strong>Gross</Strong>: ' + d.gross + '<br>' 
+    +'<Strong>Score in IMBD</Strong>: ' + d.score + '/10' + '<br>'
 }  
 
 

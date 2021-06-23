@@ -1,6 +1,5 @@
 const width = document.getElementById("container").offsetWidth * 0.95,
     height = 800,
-    fontFamily = "Open Sans",
     range_max = 30, // Max font size
     max_words = 100 // Max number of words display on the screen
     
@@ -46,7 +45,7 @@ d3.csv("data/movies.csv", function(d) {
         votes: +d.votes,
         writer: d.writer,
         year: +d.year,
-        filter: +d.runtime
+        filter: +d.runtime // At the beginning display a default cloud
     };
 }).then(function(csv) {    
     movies = csv;
@@ -76,7 +75,7 @@ d3.csv("data/movies.csv", function(d) {
     countryList.sort();
     genreList.sort();
 
-    selected_movies = [...movies];
+    selected_movies = [...movies]; // Copy movie array
     selected_movies.length = max_words; // Print only max_words words
     console.log(csv[20]);    
 
@@ -124,9 +123,7 @@ function drawcloud (tmp_movies, rangeMax, maxWords) { // declare the function
                 console.log(output.length);
                 var tmp_movies = [];
                 // Reload the array with new size
-                //movies.forEach(function(e,i) {
                 selected_movies.forEach(function(e,i) {
-                    //tmp_movies.push({"name": e.name, "filter": e.runtime});
                     tmp_movies.push(e);
                 });
                 tmp_movies.length = maxWords;
@@ -136,9 +133,7 @@ function drawcloud (tmp_movies, rangeMax, maxWords) { // declare the function
                 console.log("less words")
                 var tmp_movies = [];
                 // Reload the array with new size
-                //movies.forEach(function(e,i) {
                 selected_movies.forEach(function(e,i) {
-                    //tmp_movies.push({"name": e.name, "filter": e.runtime});
                     tmp_movies.push(e);
                 });
                 tmp_movies.length = maxWords - 5;
@@ -154,7 +149,7 @@ function drawcloud (tmp_movies, rangeMax, maxWords) { // declare the function
         .start();
 }
 
-
+// Draw the cloud
 function draw(output) {
     let text = svg_g.selectAll("text")
             .data(output);
@@ -163,7 +158,6 @@ function draw(output) {
                 .transition()
                 .duration(500)
                 .style("font-size", d => d.size + "px")
-                .style("font-family", fontFamily)
                 .style("fill", d => fillScale(d.filter))
                 .attr("text-anchor", "middle")
                 .attr("transform", d => "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")")
@@ -176,19 +170,20 @@ function draw(output) {
 
 };
 
+// Display information about the movie
 function tooltipText(d) {
     return '<Strong>Title</Strong>: ' + d.name + '<br>' 
-    +'<Strong>Year</Strong>: ' + d.year + '<br>'
+    +'<Strong>Released</Strong>: ' + d.released + '<br>'
     +'<Strong>Genre</Strong>: ' + d.genre + '<br>' 
     +'<Strong>Country</Strong>: ' + d.country + '<br>'
     +'<Strong>Company</Strong>: ' + d.company + '<br>'
     +'<Strong>Director</Strong>: ' + d.director + '<br>' 
     +'<Strong>Writer</Strong>: ' + d.writer + '<br>' 
     +'<Strong>Star</Strong>: ' + d.star + '<br>'  
-    +'<Strong>Budget</Strong>: ' + d.budget + '<br>' 
-    +'<Strong>Gross</Strong>: ' + d.gross + '<br>' 
+    +'<Strong>Budget</Strong>: ' + numeral(d.budget).format('0,0[.]00 $') + '<br>' 
+    +'<Strong>Gross</Strong>: ' + numeral(d.gross).format('0,0[.]00 $') + '<br>' 
     +'<Strong>Rating</Strong>: ' + d.rating + '<br>' 
-    +'<Strong>Score in IMBD</Strong>: ' + d.score + '<br>'
+    +'<Strong>Score in IMBD</Strong>: ' + d.score + '/10' + '<br>'
 }  
 
 function add() {
@@ -298,6 +293,7 @@ function add() {
             
             var search_div = li.append("div")
 
+            // Create the input to write the name
             var namelist = search_div.append("input")
                            .attr("type", "text")
                            .attr("placeholder", "Enter the name...")
@@ -307,6 +303,7 @@ function add() {
                         })
                            .on("keyup", (e) => autocomp(e, autocomp_box, list_options[li.property("id")]))
             
+             // Create the bow to display the possible names
             var autocomp_box = search_div.append("div")
                                         .attr("class", "autocomp_box")
                                         .style("display", "none")
@@ -343,6 +340,7 @@ function add() {
            
            var search_div = li.append("div")
 
+           // Create the input to write the name
            var namelist = search_div.append("input")
                            .attr("type", "text")
                            .attr("placeholder", "Enter the name...")
@@ -352,6 +350,7 @@ function add() {
                             })
                             .on("keyup", (e) => autocomp(e, autocomp_box, list_options[li.property("id")]))
            
+           // Create the bow to display the possible names
            var autocomp_box = search_div.append("div")
                                        .attr("class", "autocomp_box")
                                        .style("display", "none")
@@ -504,6 +503,7 @@ function updateNamelist(list_opt) {
     console.log(selector.property("value"))
     let value = selector.property("value");
 
+    // Update the list
     switch (value) {
         case "actor":
             list_opt["name"] = actorsList;
@@ -531,8 +531,9 @@ function updateNamelist(list_opt) {
 function autocomp(e, autocomp_box, list_opt) {
     autocomp_box.selectAll("li").remove();
     let userData = e.target.value; //user entered data
-    let emptyArray = [];
+    let emptyArray = []; // Array of names that start with what the user wrote
 
+    // List of all names
     let suggestions = list_opt["name"];
 
     if(userData != ""){
@@ -546,6 +547,7 @@ function autocomp(e, autocomp_box, list_opt) {
         emptyArray = suggestions;
     }
 
+    // Display values
     emptyArray = emptyArray.map((data)=>{
         autocomp_box.append("li")
                     .attr("class", "autocomp-items")
@@ -569,14 +571,13 @@ function updateWeights() {
     for (var key in list_options){
         var li_param = list_options[key];
 
+        // Add 1 to the filter variable if the condition is valid
         switch (li_param["value"]) {
             case "1":
                 //"type": typ, "order": order, "slider": slider_component
                 typ = li_param["type"]
                 let order = li_param["order"]
                 let slider = li_param["slider"]
-
-                //var selected_movies = [];
                 
                 if (typ.property("value") == "budget") {
                     if (order.property("value") ==  "higher than") {
@@ -653,9 +654,13 @@ function updateWeights() {
                 break;
         }
 
+        // Sort movies with respect to the filter variable
         selected_movies = [...movies.sort((a, b) => d3.descending(a.filter, b.filter))]
+
+        // Reduce to max_words
         selected_movies.length = max_words;
 
+        // Update color and size scales
         fillScale = d3.scaleLinear().domain([0, list_options.filter(Boolean).length])
                     .range(["blue", "red"])
 
