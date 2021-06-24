@@ -6,7 +6,7 @@ var movies = [];
 let movies1000 = [];    //after first filter
 let moviesAtt = [];     //attracted movies id
 
-const max_nodes = 1000;
+const max_nodes = 1500;
 
 var actorsList = [];
 var directorList = []
@@ -15,10 +15,8 @@ var companyList = []
 var countryList = ["chose a country"]
 var genreList = ["chose a genre"]
 
-const h = 800;
+const h = 850;
 const w = 1400;
-
-const maxDots = 500
 
 var nodes = [];
 var magnets = new Map();
@@ -32,7 +30,7 @@ var mapOfMagnet = new Map();
 var list = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100];
 var fillScale = d3.scaleLinear().domain([0, 1]).range(["blue", "red"]);
 let fillScaleMag = d3.scaleSequential()
-    .domain([0, 20])
+    .domain([-10, 15])
     .interpolator(d3.interpolateRainbow);
 
 let playground = d3.select("#playground");
@@ -59,8 +57,8 @@ svg.on('click', (event) => {
 
         svg.append("rect")
             .attr('id', "magnet" + currentMagnetid.toString())
-            .attr('x', xm - 20)
-            .attr('y', ym - 20)
+            .attr('x', xm - 10)
+            .attr('y', ym - 10)
             .attr('width', 20)
             .attr('height', 20)
             .style("fill", fillScaleMag(currentMagnetid))
@@ -153,8 +151,6 @@ d3.csv("data/movies.csv", function (d, i) {
 
     updateLists(movies);
 
-    initializeMap(movies1000);
-
 });
 
 
@@ -234,7 +230,7 @@ function magneticForce(alpha) {
 
 function apply_magnets() {
 
-    simulation.alpha(0.2);
+    simulation.alpha(0.3);
     simulation.nodes(nodes).restart();
 
 
@@ -335,7 +331,7 @@ function updateSlider1(list_opt) {
     var li = container.append("li")
 
     // Value of the type selector
-    console.log(selector.property("value"))
+    //console.log(selector.property("value"))
     let value = selector.property("value");
 
     li.append("text")
@@ -513,7 +509,7 @@ function updateDblSelectList(list_opt) {
 
     var li = container.append("li")
 
-    console.log(selector.property("value"))
+    //console.log(selector.property("value"))
     let value = selector.property("value");
 
     var dblSelector = li.append("select")
@@ -652,18 +648,6 @@ function updateMovies1000(hint, status, data) {
     nextBtn.innerHTML = hint;
 
     movies1000 = data;
-
-    svg.selectAll("rect").remove();
-    svg.selectAll("w3-button w3-display-right").remove();
-    list_options.clear();
-    currentMagnetid = 0;
-    mapOfMagnet.clear();
-    initializeMap(movies1000);
-    maxMagnetsPerNode = 1;
-    flag = 0;
-    isDragingMagnet = false;
-    magnets.clear();
-
 }
 
 //----------------------------------------------------------------
@@ -702,9 +686,6 @@ function add() {
             break;
     }
 
-    new_pos = parseInt(tooltip.style("top")) + 45;
-    tooltip.style("top", new_pos + "px");
-
 };
 
 function updateSlider2(list_opt) {
@@ -718,7 +699,7 @@ function updateSlider2(list_opt) {
     var li = list_opt["li"]
 
     // Value of the type selector
-    console.log(selector.property("value"))
+    //console.log(selector.property("value"))
     let value = selector.property("value");
 
     li.append("text")
@@ -905,7 +886,7 @@ function updateDblSelectList2(list_opt) {
     var li = list_opt["li"]
 
     // Value of the type selector
-    console.log(selector.property("value"))
+    //console.log(selector.property("value"))
     let value = selector.property("value");
 
     li.append("text")
@@ -998,7 +979,7 @@ function updateNameList(list_opt) {
     var li = list_opt["li"]
 
     // Value of the type selector
-    console.log(selector.property("value"))
+    //console.log(selector.property("value"))
     let value = selector.property("value");
 
     li.append("text")
@@ -1136,7 +1117,7 @@ function nameCheckVal2(list_opt) {
     let userData = list_opt['input'].property("value"); //user enetered data
 
     userData = userData.toLocaleLowerCase();
-    console.log("----->", userData)
+    //console.log("----->", userData)
 
     let selector = list_opt["type"]
     let value = selector.property("value");
@@ -1171,7 +1152,7 @@ function nameCheckVal2(list_opt) {
     }
 
     moviesAtt = data;
-    console.log(moviesAtt)
+    //console.log(moviesAtt)
 }
 
 function sliderCheckVal2(val, order, selector) {
@@ -1281,7 +1262,7 @@ function sliderCheckVal2(val, order, selector) {
     }
 
     moviesAtt = data;
-    console.log(moviesAtt)
+    //console.log(moviesAtt)
 
 }
 
@@ -1310,7 +1291,7 @@ function dblCheckVal2(dblselector, selector) {
     }
 
     moviesAtt = data;
-    console.log(moviesAtt);
+    //console.log(moviesAtt);
 }
 
 
@@ -1319,21 +1300,45 @@ function dblCheckVal2(dblselector, selector) {
 
 function createMap() {
     alert("create a map");
-    console.log(">>>>>>>>", movies1000)
+    //console.log(">>>>>>>>", movies1000)
     //movies1000 are nodes can be shown on map. Adjust the number by changing `max_nodes`
     //TODO:
 
+    svg.selectAll("rect").remove();
+    svg.selectAll("circle").remove();
+
+    d3.select("#magnets_container").selectAll("*").remove();
+    list_options.clear();
+    currentMagnetid = 0;
+    mapOfMagnet.clear();
+    maxMagnetsPerNode = 1;
+    flag = 0;
+    isDragingMagnet = false;
+    magnets.clear();
+    maxMagnetsPerNode = 1;
+
     nodes = movies1000;
+
+    initializeMap(movies1000);
+
+
+    nodes.forEach(function (d, i) {
+        r = d3.randomUniform(0, h * 0.3)();
+        theta = d3.randomUniform(0, 2 * 3.14)();
+        d.x = 4*w / 5 + r * Math.cos(theta);
+        d.y = 7*h / 10 + r * Math.sin(theta);
+    });
 
     simulation = d3.forceSimulation(nodes)
         .force('collision', d3.forceCollide().radius(function (d) {
             return 6
         }).strength(1.1))
         .on('tick', ticked);
+
 }
 function createMagOnMap(rect) {
     alert("create a magnet");
-    console.log(">>>>>>>>", moviesAtt);
+    //console.log(">>>>>>>>", moviesAtt);
     //moviesAtt contains the index array that will be attracted
     //TODO: 
     rect.on("click", null);
