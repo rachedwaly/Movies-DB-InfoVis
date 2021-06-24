@@ -148,6 +148,7 @@ d3.csv("data/movies.csv", function (d, i) {
 
 }).then(function (csv) {
     movies = csv;
+    console.log(">>>>", movies[0].released.split("-")[0]);
 
     updateLists(movies);
 
@@ -311,7 +312,7 @@ function filter1() {
     let list_opt = { "container": container, "type": select1 };
 
     switch (select1.property("value")) {
-        case "budget": case "gross": case "runtime": case "score": case "votes":
+        case "budget": case "gross": case "runtime": case "score": case "votes": case "dates":
             updateSlider1(list_opt);
             break;
         case "genre": case "country":
@@ -484,6 +485,33 @@ function updateSlider1(list_opt) {
                     sliderCheckVal(val1, val2, selector);;
                 });
             break;
+        case "dates":
+            let minDates = movies[0].released.split("-")[0];
+            let maxDates = Math.ceil(d3.max(movies, d => d.released.split("-")[0]));
+
+            var new_slider = d3.sliderHorizontal()
+                .min(minDates)
+                .max(maxDates)
+                .step(1)
+                .width(500)
+                .ticks(5)
+                .displayValue(true)
+                .on('onchange', (val) => {
+                    val1 = val;
+                    sliderCheckVal(val1, val2, selector);;
+                });
+            var new_slider2 = d3.sliderHorizontal()
+                .min(minDates)
+                .max(maxDates)
+                .step(1)
+                .width(500)
+                .ticks(5)
+                .displayValue(true)
+                .on('onchange', (val) => {
+                    val2 = val;
+                    sliderCheckVal(val1, val2, selector);;
+                });
+            break;
         default:
     }
 
@@ -590,6 +618,12 @@ function sliderCheckVal(val1, val2, selector) {
                         data.push(d);
                 })
                 break;
+            case "dates":
+                movies.forEach(function (d, i) {
+                    if (d.released.split("-")[0] >= val1 && d.released.split("-")[0] <= val2)
+                        data.push(d);
+                })
+                break;
             default:
 
         }
@@ -669,7 +703,7 @@ function add() {
     list_options.set(currentMagnetid.toString(), { "li": li, "type": select2 });
 
     switch (select2.property("value")) {
-        case "budget": case "gross": case "runtime": case "score": case "votes":
+        case "budget": case "gross": case "runtime": case "score": case "votes": case "year": case "month":
 
             updateSlider2(list_options.get(li.property("id")));
 
@@ -732,8 +766,8 @@ function updateSlider2(list_opt) {
     // Create the new slider depending on the type value
     switch (value) {
         case "budget":
-            let minBudget = d3.min(movies, d => d.budget);
-            let maxBudget = d3.max(movies, d => d.budget);
+            let minBudget = d3.min(movies1000, d => d.budget);
+            let maxBudget = d3.max(movies1000, d => d.budget);
 
             var new_slider = d3.sliderHorizontal()
                 .min(minBudget)
@@ -750,7 +784,7 @@ function updateSlider2(list_opt) {
             break;
         case "gross":
             let minGross = 0;
-            let maxGross = Math.ceil(d3.max(movies, d => d.gross) / 1000000) * 1000000;
+            let maxGross = Math.ceil(d3.max(movies1000, d => d.gross) / 1000000) * 1000000;
 
             var new_slider = d3.sliderHorizontal()
                 .min(minGross)
@@ -766,8 +800,8 @@ function updateSlider2(list_opt) {
             // .on('end', function() { createMagOnMap()});
             break;
         case "runtime":
-            let minRuntime = d3.min(movies, d => d.runtime);
-            let maxRuntime = d3.max(movies, d => d.runtime);
+            let minRuntime = d3.min(movies1000, d => d.runtime);
+            let maxRuntime = d3.max(movies1000, d => d.runtime);
 
             var new_slider = d3.sliderHorizontal()
                 .min(minRuntime)
@@ -799,7 +833,7 @@ function updateSlider2(list_opt) {
             break;
         case "votes":
             let minVotes = 0;
-            let maxVotes = Math.ceil(d3.max(movies, d => d.votes) / 100000) * 100000;
+            let maxVotes = Math.ceil(d3.max(movies1000, d => d.votes) / 100000) * 100000;
 
             var new_slider = d3.sliderHorizontal()
                 .min(minVotes)
@@ -813,6 +847,38 @@ function updateSlider2(list_opt) {
                     sliderCheckVal2(val, order, selector)
                 })
             // .on('end', function() { createMagOnMap()});
+            break;
+        case "year":
+            let minDates = Math.ceil(d3.min(movies1000, d => d.released.split("-")[0]));
+            let maxDates = Math.ceil(d3.max(movies1000, d => d.released.split("-")[0]));
+
+            var new_slider = d3.sliderHorizontal()
+                .min(minDates)
+                .max(maxDates)
+                .step(1)
+                .width(500)
+                .ticks(5)
+                .displayValue(true)
+                .on('onchange', (val) => {
+                    list_opt["slider_value"] = val;
+                    sliderCheckVal2(val, order, selector);
+                });
+            break;
+        case "month":
+            let minMonth = 1;
+            let maxMonth = 12;
+
+            var new_slider = d3.sliderHorizontal()
+                .min(minMonth)
+                .max(maxMonth)
+                .step(1)
+                .width(500)
+                .ticks(5)
+                .displayValue(true)
+                .on('onchange', (val) => {
+                    list_opt["slider_value"] = val;
+                    sliderCheckVal2(val, order, selector)
+                });
             break;
         default:
     }
@@ -867,8 +933,8 @@ function updateSlider2(list_opt) {
                     }
                     r = d3.randomUniform(0, h * 0.3)();
                     theta = d3.randomUniform(0, 2 * 3.14)();
-                    d.x = w / 2 + r * Math.cos(theta);
-                    d.y = h / 2 + r * Math.sin(theta);
+                    d.x = 4*w / 5 + r * Math.cos(theta);
+                    d.y = 7*h / 10 + r * Math.sin(theta);
                 }
             });
             update_colors();
@@ -962,8 +1028,8 @@ function updateDblSelectList2(list_opt) {
                     }
                     r = d3.randomUniform(0, h * 0.3)();
                     theta = d3.randomUniform(0, 2 * 3.14)();
-                    d.x = w / 2 + r * Math.cos(theta);
-                    d.y = h / 2 + r * Math.sin(theta);
+                    d.x = 4*w / 5 + r * Math.cos(theta);
+                    d.y = 7*h / 10 + r * Math.sin(theta);
                 }
             });
             update_colors();
@@ -1069,8 +1135,8 @@ function updateNameList(list_opt) {
                     }
                     r = d3.randomUniform(0, h * 0.3)();
                     theta = d3.randomUniform(0, 2 * 3.14)();
-                    d.x = w / 2 + r * Math.cos(theta);
-                    d.y = h / 2 + r * Math.sin(theta);
+                    d.x = 4*w / 5 + r * Math.cos(theta);
+                    d.y = 7*h / 10 + r * Math.sin(theta);
                 }
             });
             update_colors();
@@ -1253,6 +1319,44 @@ function sliderCheckVal2(val, order, selector) {
             } else {
                 movies1000.forEach(function (d, i) {
                     if (d.votes < val)
+                        data.push(d.id);
+                })
+            }
+            break;
+        case "year":
+            if (order.property("value") == "higher than") {
+                movies1000.forEach(function (d, i) {
+                    if (d.released.split("-")[0] > val)
+                        data.push(d.id);
+                })
+
+            } else if (order.property("value") == "equals to") {
+                movies1000.forEach(function (d, i) {
+                    if (d.released.split("-")[0] = val)
+                        data.push(d.id);
+                })
+            } else {
+                movies1000.forEach(function (d, i) {
+                    if (d.released.split("-")[0] < val)
+                        data.push(d.id);
+                })
+            }
+            break;
+        case "month":
+            if (order.property("value") == "higher than") {
+                movies1000.forEach(function (d, i) {
+                    if (d.released.split("-")[1] > val)
+                        data.push(d.id);
+                })
+
+            } else if (order.property("value") == "equals to") {
+                movies1000.forEach(function (d, i) {
+                    if (d.released.split("-")[1] = val)
+                        data.push(d.id);
+                })
+            } else {
+                movies1000.forEach(function (d, i) {
+                    if (d.released.split("-")[1] < val)
                         data.push(d.id);
                 })
             }

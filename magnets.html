@@ -1,75 +1,82 @@
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Magnets</title>
-        <script type="text/javascript" src="js/d3/d3.js"></script>
-        <script src="https://unpkg.com/d3-simple-slider"></script>
-        <script src="https://cdn.jsdelivr.net/npm/d3-array@3"></script>
-        <script src="https://cdn.jsdelivr.net/npm/d3-time@3"></script>
-        <script src="https://cdn.jsdelivr.net/npm/d3-time-format@4"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
-        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-        <link rel="stylesheet" href="css/magnets_style.css">
-    </head>
-    <body id="container">
-        <div id="first_filter">
-            <div id="topbar">
-                1st Step: We could only show 1500 nodes on the map, so please select a range that contains less than 1000 nodes
-                <a href="index.html" >Word Cloud</a>
-            </div>
-            
-            <div>
-                <select id="selector1" onchange="filter1()">
-                    <option>Select a Category</option>
-                    <option>budget</option>
-                    <option>gross</option>
-                    <option>runtime</option>
-                    <option>score</option>
-                    <option>votes</option>
-                </select>
 
-                <div id="filter_container"></div>
-            </div>
-        </div>
-        
-        <button id="next" onclick="filter2()" disabled>create a magnet map with 0 nodes</button> 
-        
-        <div id="second_filter" style="display: none">
-            2nd Step: Choose a category and set its value, then click on the magnet (rectangle) in the end of the line. After seeing a popup, click on the map to set your magnet.
-            <div>
-                <select id="selector2">
-                    <option>Select a Category</option>
-                    <option>genre</option>
-                    <option>country</option>
+<head>
+    <meta charset="utf-8">
+    <title>Magnets</title>
+    <script type="text/javascript" src="js/d3/d3.js"></script>
+    <script src="https://unpkg.com/d3-simple-slider"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-array@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-time@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-time-format@4"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="css/magnets_style.css">
+</head>
 
-                    <option>budget</option>
-                    <option>gross</option>
-                    <option>runtime</option>
-                    <option>score</option>
-                    <option>votes</option>
-
-                    <option>actor</option>
-                    <option>director</option>
-                    <option>writer</option>
-                    <option>company</option>
-                </select>
-                <button class="w3-button w3-black" id="add_button" onclick="add()">+</button>
-            </div>
-            
-            <div id="magnets_container"></div>  
-            
-        </div>
-        <div id="content">
-            <div id="playground"></div>
-            <div id="tooltip">
-                <p style="color:blue"><strong>Movie information</strong></p>
-                <p><span id="info"></span></p>
-            </div>
+<body id="container">
+    <div id="first_filter">
+        <div id="topbar">
+            1st Step: We could only show 1500 nodes on the map, so please select a range that contains less than 1000
+            nodes
+            <a href="index.html">Word Cloud</a>
         </div>
 
+        <div>
+            <select id="selector1" onchange="filter1()">
+                <option>Select a Category</option>
+                <option>budget</option>
+                <option>gross</option>
+                <option>runtime</option>
+                <option>score</option>
+                <option>votes</option>
+                <option>dates</option>
+            </select>
+
+            <div id="filter_container"></div>
+        </div>
+    </div>
+
+    <button id="next" onclick="filter2()" disabled>create a magnet map with 0 nodes</button>
+
+    <div id="second_filter" style="display: none">
+        2nd Step: Choose a category and set its value, then click on the magnet (rectangle) in the end of the line.
+        After seeing a popup, click on the map to set your magnet.
+        <div>
+            <select id="selector2">
+                <option>Select a Category</option>
+                <option>genre</option>
+                <option>country</option>
+
+                <option>budget</option>
+                <option>gross</option>
+                <option>runtime</option>
+                <option>score</option>
+                <option>votes</option>
+                <option>year</option>
+                <option>month</option>
+
+                <option>actor</option>
+                <option>director</option>
+                <option>writer</option>
+                <option>company</option>
+            </select>
+            <button class="w3-button w3-black" id="add_button" onclick="add()">+</button>
+        </div>
+
+        <div id="magnets_container"></div>
+
+    </div>
+
+    <div id="content">
+        <div id="playground"></div>
+        <div id="tooltip">
+            <p style="color:blue"><strong>Movie information</strong></p>
+            <p><span id="info"></span></p>
+        </div>
+    </div>
 
 
-        <script type="text/javascript" src="js/magnets_filter.js"></script>
-    </body>
+    <script type="text/javascript" src="js/magnets_filter.js"></script>
+</body>
 
 </html>
