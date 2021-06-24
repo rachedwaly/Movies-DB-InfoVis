@@ -933,8 +933,8 @@ function updateSlider2(list_opt) {
                     }
                     r = d3.randomUniform(0, h * 0.3)();
                     theta = d3.randomUniform(0, 2 * 3.14)();
-                    d.x = 4*w / 5 + r * Math.cos(theta);
-                    d.y = 7*h / 10 + r * Math.sin(theta);
+                    d.x = 4 * w / 5 + r * Math.cos(theta);
+                    d.y = 7 * h / 10 + r * Math.sin(theta);
                 }
             });
             update_colors();
@@ -1028,8 +1028,8 @@ function updateDblSelectList2(list_opt) {
                     }
                     r = d3.randomUniform(0, h * 0.3)();
                     theta = d3.randomUniform(0, 2 * 3.14)();
-                    d.x = 4*w / 5 + r * Math.cos(theta);
-                    d.y = 7*h / 10 + r * Math.sin(theta);
+                    d.x = 4 * w / 5 + r * Math.cos(theta);
+                    d.y = 7 * h / 10 + r * Math.sin(theta);
                 }
             });
             update_colors();
@@ -1135,8 +1135,8 @@ function updateNameList(list_opt) {
                     }
                     r = d3.randomUniform(0, h * 0.3)();
                     theta = d3.randomUniform(0, 2 * 3.14)();
-                    d.x = 4*w / 5 + r * Math.cos(theta);
-                    d.y = 7*h / 10 + r * Math.sin(theta);
+                    d.x = 4 * w / 5 + r * Math.cos(theta);
+                    d.y = 7 * h / 10 + r * Math.sin(theta);
                 }
             });
             update_colors();
@@ -1237,7 +1237,7 @@ function sliderCheckVal2(val, order, selector) {
 
             } else if (order.property("value") == "equals to") {
                 movies1000.forEach(function (d, i) {
-                    if (d.budget = val)
+                    if (d.budget == val)
                         data.push(d.id);
                 })
             } else {
@@ -1256,7 +1256,7 @@ function sliderCheckVal2(val, order, selector) {
 
             } else if (order.property("value") == "equals to") {
                 movies1000.forEach(function (d, i) {
-                    if (d.gross = val)
+                    if (d.gross == val)
                         data.push(d.id);
                 })
             } else {
@@ -1275,7 +1275,7 @@ function sliderCheckVal2(val, order, selector) {
 
             } else if (order.property("value") == "equals to") {
                 movies1000.forEach(function (d, i) {
-                    if (d.runtime = val)
+                    if (d.runtime == val)
                         data.push(d.id);
                 })
             } else {
@@ -1294,7 +1294,7 @@ function sliderCheckVal2(val, order, selector) {
 
             } else if (order.property("value") == "equals to") {
                 movies1000.forEach(function (d, i) {
-                    if (d.score = val)
+                    if (d.score == val)
                         data.push(d.id);
                 })
             } else {
@@ -1313,7 +1313,7 @@ function sliderCheckVal2(val, order, selector) {
 
             } else if (order.property("value") == "equals to") {
                 movies1000.forEach(function (d, i) {
-                    if (d.votes = val)
+                    if (d.votes == val)
                         data.push(d.id);
                 })
             } else {
@@ -1332,7 +1332,7 @@ function sliderCheckVal2(val, order, selector) {
 
             } else if (order.property("value") == "equals to") {
                 movies1000.forEach(function (d, i) {
-                    if (d.released.split("-")[0] = val)
+                    if (d.released.split("-")[0] == val)
                         data.push(d.id);
                 })
             } else {
@@ -1351,7 +1351,7 @@ function sliderCheckVal2(val, order, selector) {
 
             } else if (order.property("value") == "equals to") {
                 movies1000.forEach(function (d, i) {
-                    if (d.released.split("-")[1] = val)
+                    if (d.released.split("-")[1] == val)
                         data.push(d.id);
                 })
             } else {
@@ -1429,8 +1429,8 @@ function createMap() {
     nodes.forEach(function (d, i) {
         r = d3.randomUniform(0, h * 0.3)();
         theta = d3.randomUniform(0, 2 * 3.14)();
-        d.x = 4*w / 5 + r * Math.cos(theta);
-        d.y = 7*h / 10 + r * Math.sin(theta);
+        d.x = 4 * w / 5 + r * Math.cos(theta);
+        d.y = 7 * h / 10 + r * Math.sin(theta);
     });
 
     simulation = d3.forceSimulation(nodes)
