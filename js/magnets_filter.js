@@ -1,6 +1,5 @@
 // Filter variables
-var ID = 0;
-var list_options = [];  //used by second filter
+var list_options = new Map();  //used by second filter
 
 // Data lists
 var movies = [];
@@ -23,7 +22,7 @@ const maxDots = 500
 
 var nodes = [];
 var magnets = new Map();
-var maxMagnetsPerNode = 0;
+var maxMagnetsPerNode = 1;
 var flag = 0;
 var isDragingMagnet = false;
 var draged_magnetID = -1;
@@ -33,18 +32,18 @@ var mapOfMagnet = new Map();
 var list = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100];
 var fillScale = d3.scaleLinear().domain([0, 1]).range(["blue", "red"]);
 let fillScaleMag = d3.scaleSequential()
-.domain([0, 10])
-.interpolator(d3.interpolateRainbow);
+    .domain([0, 20])
+    .interpolator(d3.interpolateRainbow);
 
-let container=d3.select("body").append("div").attr('id',"container");
+let playground = d3.select("#playground");
 
-let svg = container
+let svg = playground
     .append("svg")
     .attr("width", w)
     .attr("height", h);
 
 
-var tooltip=d3.select('body').select("#tooltip");
+var tooltip = d3.select("#tooltip");
 
 svg.on('click', (event) => {
     var coordinates = d3.pointer(event);
@@ -59,15 +58,15 @@ svg.on('click', (event) => {
         magnets.set(currentMagnetid, { x: xm, y: ym });
 
         svg.append("rect")
-        .attr('id', "magnet" + currentMagnetid.toString())
-        .attr('x', xm-20)
-        .attr('y', ym-20)
-        .attr('width', 20)
-        .attr('height', 20)
-        .style("fill", fillScaleMag(currentMagnetid))
-        .call(d3.drag().on("start", dragstarted)
-                           .on("drag", dragged)
-                           .on("end", dragended));
+            .attr('id', "magnet" + currentMagnetid.toString())
+            .attr('x', xm - 20)
+            .attr('y', ym - 20)
+            .attr('width', 20)
+            .attr('height', 20)
+            .style("fill", fillScaleMag(currentMagnetid))
+            .call(d3.drag().on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
 
 
         //fill the mapofmagnet
@@ -85,39 +84,39 @@ svg.on('click', (event) => {
     }
 });
 
-function update_colors(){
+function update_colors() {
     fillScale = d3.scaleLinear().domain([0, maxMagnetsPerNode]).range(["blue", "red"]);
     svg
-      .selectAll('circle')
-      .style("fill", d => fillScale(mapOfMagnet.get(d.id).length))
+        .selectAll('circle')
+        .style("fill", d => fillScale(mapOfMagnet.get(d.id).length))
 }
 
 
-function dragstarted(event){
-    if (flag != 0) {return;}
+function dragstarted(event) {
+    if (flag != 0) { return; }
     isDragingMagnet = true;
     idStr = event.sourceEvent.target.id;
     draged_magnetID = parseInt(idStr.slice(6,));
 }
 
-function dragged(event){
-    if (!isDragingMagnet) {return;}
-    if (event.x>w-5 ||  event.y >h-5 ||  event.x <5 ||  event.y <5) {return;}
-    
+function dragged(event) {
+    if (!isDragingMagnet) { return; }
+    if (event.x > w - 5 || event.y > h - 5 || event.x < 5 || event.y < 5) { return; }
+
     magnets.get(draged_magnetID).x = event.x;
     magnets.get(draged_magnetID).y = event.y;
 
 
-    svg.select('#magnet'+draged_magnetID.toString())
+    svg.select('#magnet' + draged_magnetID.toString())
         .attr('x', event.x)
         .attr('y', event.y);
 
-        resetMagnets();
-        apply_magnets();   
+    resetMagnets();
+    apply_magnets();
 }
 
-function dragended(event){
-    if (!isDragingMagnet) {return;}
+function dragended(event) {
+    if (!isDragingMagnet) { return; }
     isDragingMagnet = false;
     draged_magnetID = -1;
 }
@@ -126,8 +125,8 @@ function dragended(event){
 
 
 d3.csv("data/movies.csv", function (d, i) {
-    r = d3.randomUniform(0,h*0.3)()
-    theta = d3.randomUniform(0,2*3.14)()
+    r = d3.randomUniform(0, h * 0.3)();
+    theta = d3.randomUniform(0, 2 * 3.14)();
     return {
         id: +i,
         budget: +d.budget,
@@ -145,8 +144,8 @@ d3.csv("data/movies.csv", function (d, i) {
         votes: +d.votes,
         writer: d.writer,
         year: +d.year,
-        x : +w/2+r*Math.cos(theta),
-        y : +h/2+r*Math.sin(theta)
+        x: +w / 2 + r * Math.cos(theta),
+        y: +h / 2 + r * Math.sin(theta)
     };
 
 }).then(function (csv) {
@@ -154,7 +153,7 @@ d3.csv("data/movies.csv", function (d, i) {
 
     updateLists(movies);
 
-    initializeMap(movies);
+    initializeMap(movies1000);
 
 });
 
@@ -174,46 +173,45 @@ function ticked() {
         .attr('cy', function (d) {
             return d.y
         })
-        
-        .on("mouseover", function(event, d){
+
+        .on("mouseover", function (event, d) {
             var coordinates = d3.pointer(event);
             lastX = coordinates[0];
             lastY = coordinates[1];
             tooltip
-
                 .select("#info")
                 .html(tooltipText(d));
 
-            return tooltip.style("visibility", "visible");
+            tooltip.style("display", "block");
         })
-        .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
-        
+        .on("mouseout", function () { tooltip.style("display", "none"); });
+
 }
 
 function tooltipText(d) {
-    return '<Strong>Title</Strong>: ' + d.name + '<br>' 
-    +'<Strong>Released</Strong>: ' + d.released + '<br>'
-    +'<Strong>Genre</Strong>: ' + d.genre + '<br>' 
-    +'<Strong>Country</Strong>: ' + d.country + '<br>'
-    +'<Strong>Company</Strong>: ' + d.company + '<br>'
-    +'<Strong>Director</Strong>: ' + d.director + '<br>' 
-    +'<Strong>Writer</Strong>: ' + d.writer + '<br>' 
-    +'<Strong>Star</Strong>: ' + d.star + '<br>'  
-    +'<Strong>Budget</Strong>: ' + numeral(d.budget).format('0,0[.]00 $') + '<br>' 
-    +'<Strong>Gross</Strong>: ' + numeral(d.gross).format('0,0[.]00 $') + '<br>' 
-    +'<Strong>Rating</Strong>: ' + d.rating + '<br>' 
-    +'<Strong>Score in IMBD</Strong>: ' + d.score + '/10' + '<br>'
-}  
+    return '<Strong>Title</Strong>: ' + d.name + '<br>'
+        + '<Strong>Released</Strong>: ' + d.released + '<br>'
+        + '<Strong>Genre</Strong>: ' + d.genre + '<br>'
+        + '<Strong>Country</Strong>: ' + d.country + '<br>'
+        + '<Strong>Company</Strong>: ' + d.company + '<br>'
+        + '<Strong>Director</Strong>: ' + d.director + '<br>'
+        + '<Strong>Writer</Strong>: ' + d.writer + '<br>'
+        + '<Strong>Star</Strong>: ' + d.star + '<br>'
+        + '<Strong>Budget</Strong>: ' + numeral(d.budget).format('0,0[.]00 $') + '<br>'
+        + '<Strong>Gross</Strong>: ' + numeral(d.gross).format('0,0[.]00 $') + '<br>'
+        + '<Strong>Rating</Strong>: ' + d.rating + '<br>'
+        + '<Strong>Score in IMBD</Strong>: ' + d.score + '/10' + '<br>'
+}
 
 
-function magneticForce(alpha){
+function magneticForce(alpha) {
     var strength = 0.7;
-    var l = alpha*strength;
+    var l = alpha * strength;
 
-    nodes.forEach(d => {        
+    nodes.forEach(d => {
         activeMagnets = mapOfMagnet.get(d.id);
 
-        if (activeMagnets.length != 0){
+        if (activeMagnets.length != 0) {
             let xm = 0;
             let ym = 0;
 
@@ -226,8 +224,8 @@ function magneticForce(alpha){
             xm /= activeMagnets.length;
             ym /= activeMagnets.length;
 
-            d.x -= (d.x-xm)*l;
-            d.y -= (d.y-ym)*l;            
+            d.x -= (d.x - xm) * l;
+            d.y -= (d.y - ym) * l;
         }
 
     });
@@ -239,9 +237,9 @@ function apply_magnets() {
     simulation.alpha(0.2);
     simulation.nodes(nodes).restart();
 
-    
+
     simulation.force("zall", magneticForce);
-    
+
 }
 
 
@@ -259,7 +257,7 @@ function initializeMap(data) {
 function updateMap(list, magnetID) {
     for (const i of list) {
         mapOfMagnet.get(i).push(magnetID);
-        if (mapOfMagnet.get(i).length>maxMagnetsPerNode){
+        if (mapOfMagnet.get(i).length > maxMagnetsPerNode) {
             maxMagnetsPerNode = mapOfMagnet.get(i).length;
         }
     }
@@ -267,14 +265,14 @@ function updateMap(list, magnetID) {
 }
 
 
-function switchTo(i){
+function switchTo(i) {
     flag = i;
 }
 
 
 
 
-function updateLists(data){
+function updateLists(data) {
 
     actorsList = [];
     directorList = []
@@ -283,7 +281,7 @@ function updateLists(data){
     countryList = ["0 Chose a country"]
     genreList = ["0 Chose a genre"]
 
-    data.forEach(function(d,i) {
+    data.forEach(function (d, i) {
         actorsList.push(d.star);
         directorList.push(d.director);
         writerList.push(d.writer);
@@ -311,10 +309,10 @@ function updateLists(data){
 
 
 //first filter
-function filter1(){
+function filter1() {
     let select1 = d3.select("#selector1");
     let container = d3.select("#filter_container");
-    let list_opt = {"container": container, "type": select1};
+    let list_opt = { "container": container, "type": select1 };
 
     switch (select1.property("value")) {
         case "budget": case "gross": case "runtime": case "score": case "votes":
@@ -328,7 +326,7 @@ function filter1(){
     }
 }
 function updateSlider1(list_opt) {
-   
+
     let selector = list_opt["type"]
 
     let container = list_opt["container"]
@@ -341,19 +339,19 @@ function updateSlider1(list_opt) {
     let value = selector.property("value");
 
     li.append("text")
-    .text("from: ")
+        .text("from: ")
     // Create a new svg for the new slider
     let new_slider_component = li.append('svg')
-            .attr('width', 600)
-            .attr('height', 70)
-    
-            
+        .attr('width', 600)
+        .attr('height', 70)
+
+
     li.append("text")
-    .text("to: ")
+        .text("to: ")
 
     let new_slider_component2 = li.append('svg')
-            .attr('width', 600)
-            .attr('height', 70)
+        .attr('width', 600)
+        .attr('height', 70)
 
     let val1 = 0, val2 = 0;
     // Create the new slider depending on the type value
@@ -361,7 +359,7 @@ function updateSlider1(list_opt) {
         case "budget":
             let minBudget = d3.min(movies, d => d.budget);
             let maxBudget = d3.max(movies, d => d.budget);
-        
+
             var new_slider = d3.sliderHorizontal()
                 .min(minBudget)
                 .max(maxBudget)
@@ -372,7 +370,7 @@ function updateSlider1(list_opt) {
                 .on('onchange', (val) => {
                     val1 = val;
                     sliderCheckVal(val1, val2, selector);
-            });
+                });
             var new_slider2 = d3.sliderHorizontal()
                 .min(minBudget)
                 .max(maxBudget)
@@ -383,7 +381,7 @@ function updateSlider1(list_opt) {
                 .on('onchange', (val) => {
                     val2 = val;
                     sliderCheckVal(val1, val2, selector);;
-            });
+                });
 
             break;
         case "gross":
@@ -400,7 +398,7 @@ function updateSlider1(list_opt) {
                 .on('onchange', (val) => {
                     val1 = val;
                     sliderCheckVal(val1, val2, selector);;
-            });
+                });
             var new_slider2 = d3.sliderHorizontal()
                 .min(minGross)
                 .max(maxGross)
@@ -411,12 +409,12 @@ function updateSlider1(list_opt) {
                 .on('onchange', (val) => {
                     val2 = val;
                     sliderCheckVal(val1, val2, selector);;
-            });
+                });
             break;
         case "runtime":
             let minRuntime = d3.min(movies, d => d.runtime);
             let maxRuntime = d3.max(movies, d => d.runtime);
-        
+
             var new_slider = d3.sliderHorizontal()
                 .min(minRuntime)
                 .max(maxRuntime)
@@ -426,7 +424,7 @@ function updateSlider1(list_opt) {
                 .on('onchange', (val) => {
                     val1 = val;
                     sliderCheckVal(val1, val2, selector);;
-            });
+                });
             var new_slider2 = d3.sliderHorizontal()
                 .min(minRuntime)
                 .max(maxRuntime)
@@ -436,12 +434,12 @@ function updateSlider1(list_opt) {
                 .on('onchange', (val) => {
                     val2 = val;
                     sliderCheckVal(val1, val2, selector);;
-            });
+                });
             break;
         case "score":
             let minScore = 0;
             let maxScore = 10;
-        
+
             var new_slider = d3.sliderHorizontal()
                 .min(minScore)
                 .max(maxScore)
@@ -466,7 +464,7 @@ function updateSlider1(list_opt) {
         case "votes":
             let minVotes = 0;
             let maxVotes = Math.ceil(d3.max(movies, d => d.votes) / 100000) * 100000;
-        
+
             var new_slider = d3.sliderHorizontal()
                 .min(minVotes)
                 .max(maxVotes)
@@ -495,12 +493,12 @@ function updateSlider1(list_opt) {
 
     // Add the slider into the svg component
     new_slider_component.append('g')
-                        .attr('transform', 'translate(30,30)')
-                        .call(new_slider)
+        .attr('transform', 'translate(30,30)')
+        .call(new_slider)
 
     new_slider_component2.append('g')
-                        .attr('transform', 'translate(30,30)')
-                        .call(new_slider2) 
+        .attr('transform', 'translate(30,30)')
+        .call(new_slider2)
 
 };
 
@@ -510,8 +508,8 @@ function updateDblSelectList(list_opt) {
     let selector = list_opt["type"]
 
     let container = list_opt["container"]
-    if(container.selectAll('li'))
-    container.selectAll('li').remove();
+    if (container.selectAll('li'))
+        container.selectAll('li').remove();
 
     var li = container.append("li")
 
@@ -519,20 +517,20 @@ function updateDblSelectList(list_opt) {
     let value = selector.property("value");
 
     var dblSelector = li.append("select")
-    .attr("id", "selectTmp")
-    .attr("class", "type")
-    .attr("height", 28)
-    .on('change', () => {dblCheckVal(dblSelector, selector)})
+        .attr("id", "selectTmp")
+        .attr("class", "type")
+        .attr("height", 28)
+        .on('change', () => { dblCheckVal(dblSelector, selector) })
 
     // Create the new slider depending on the type value
     switch (value) {
         case "country":
             dblSelector.selectAll("option")
-             .data(countryList)
-             .enter()
-             .append("option")
-             .text(function(d){return d;})
-             .attr("value", function(d) {return d;});
+                .data(countryList)
+                .enter()
+                .append("option")
+                .text(function (d) { return d; })
+                .attr("value", function (d) { return d; });
 
             break;
         case "genre":
@@ -540,125 +538,137 @@ function updateDblSelectList(list_opt) {
                 .data(genreList)
                 .enter()
                 .append("option")
-                .text(function(d){return d;})
-                .attr("value", function(d) {return d;});
-   
-               break;
-        
+                .text(function (d) { return d; })
+                .attr("value", function (d) { return d; });
+
+            break;
+
         default:
     }
-            
+
 };
 
 // reusable:
 // slider value check (...value, type selector) 
-function sliderCheckVal(val1, val2, selector){
-    
-   let select1 = selector.property("value");
-   let hint = "";
-   let data = [];
+function sliderCheckVal(val1, val2, selector) {
 
-    if(val1 > val2){
+    let select1 = selector.property("value");
+    let hint = "";
+    let data = [];
+
+    if (val1 > val2) {
         hint = "slider 1 greater than slider 2"
         updateMovies1000(hint, true, data)
         return null;
-    } else{
+    } else {
         switch (select1) {
             case "budget":
-                for(let i = 0; i < movies.length; i++){
-                    if(movies[i].budget >= val1 && movies[i].budget <= val2){
+                for (let i = 0; i < movies.length; i++) {
+                    if (movies[i].budget >= val1 && movies[i].budget <= val2) {
                         data.push(movies[i]);
                     }
                 }
                 break;
             case "gross":
-                movies.forEach(function(d,i) {
-                    if(d.gross >= val1 && d.gross <= val2)
+                movies.forEach(function (d, i) {
+                    if (d.gross >= val1 && d.gross <= val2)
                         data.push(d);
                 })
                 break;
             case "runtime":
-                movies.forEach(function(d,i) {
-                    if(d.runtime >= val1 && d.runtime <= val2)
+                movies.forEach(function (d, i) {
+                    if (d.runtime >= val1 && d.runtime <= val2)
                         data.push(d);
                 })
                 break;
             case "score":
-                movies.forEach(function(d,i) {
-                    if(d.score >= val1 && d.score <= val2)
+                movies.forEach(function (d, i) {
+                    if (d.score >= val1 && d.score <= val2)
                         data.push(d);
                 })
-                 
+
                 break;
             case "votes":
-                movies.forEach(function(d,i) {
-                    if(d.votes >= val1 && d.votes <= val2)
+                movies.forEach(function (d, i) {
+                    if (d.votes >= val1 && d.votes <= val2)
                         data.push(d);
                 })
                 break;
             default:
-            
+
         }
 
-        if(data.length < max_nodes){
+        if (data.length < max_nodes) {
             hint = "create a magnet map with " + data.length + " nodes";
             updateMovies1000(hint, false, data)
 
-        }else{
-            hint = "can't create a magnet map with " + data.length + " nodes, change the slider value or change another category";           
+        } else {
+            hint = "can't create a magnet map with " + data.length + " nodes, change the slider value or change another category";
             updateMovies1000(hint, true, data)
         }
     }
 }
 // reusable:
 // double selector value check (...value, type selector)
-function dblCheckVal(dblselector, selector){ 
-    
+function dblCheckVal(dblselector, selector) {
+
     let select1 = selector.property("value");
     let value = dblselector.property("value");  // selected country or genre
     let hint = "";
-    
+
     let data = [];
     switch (select1) {
         case "country":
-            movies.forEach(function(d,i) {
-                if(d.country === value)
+            movies.forEach(function (d, i) {
+                if (d.country === value)
                     data.push(d);
             })
             break;
         case "genre":
-            movies.forEach(function(d,i) {
-                if(d.genre === value)
+            movies.forEach(function (d, i) {
+                if (d.genre === value)
                     data.push(d);
             })
             break;
-        default:break;
-        
+        default: break;
+
     }
 
-    if(data.length < max_nodes){
+    if (data.length < max_nodes) {
         hint = "create a magnet map with " + data.length + " nodes";
         updateMovies1000(hint, false, data)
 
-    }else{
-        hint = "can't create a magnet map with " + data.length + " nodes, change another category";           
+    } else {
+        hint = "can't create a magnet map with " + data.length + " nodes, change another category";
         updateMovies1000(hint, true, data)
     }
 }
 
 // first filter result : active button & update movies1000
-function updateMovies1000(hint, status, data){
+function updateMovies1000(hint, status, data) {
     let nextBtn = document.getElementById("next");
-    if(status) nextBtn.disabled = true;
+    if (status) nextBtn.disabled = true;
     else nextBtn.removeAttribute('disabled')
     nextBtn.innerHTML = hint;
 
     movies1000 = data;
+
+    svg.selectAll("rect").remove();
+    svg.selectAll("w3-button w3-display-right").remove();
+    list_options.clear();
+    currentMagnetid = 0;
+    mapOfMagnet.clear();
+    initializeMap(movies1000);
+    maxMagnetsPerNode = 1;
+    flag = 0;
+    isDragingMagnet = false;
+    magnets.clear();
+
 }
 
 //----------------------------------------------------------------
 
-function filter2(){
+function filter2() {
     let filter2 = document.getElementById("second_filter")
     filter2.style.display = "";
     createMap();
@@ -669,37 +679,36 @@ function add() {
     let container = d3.select("#magnets_container");
 
     var li = container.append("li")
-                        .attr("class", "w3-display-container")
-                        .attr("id", ID);
+        .attr("class", "w3-display-container")
+        .attr("id", currentMagnetid);
 
-    list_options[ID.toString()] = {"li": li, "type": select2};
+    list_options.set(currentMagnetid.toString(), { "li": li, "type": select2 });
 
     switch (select2.property("value")) {
         case "budget": case "gross": case "runtime": case "score": case "votes":
-            
-            updateSlider2(list_options[li.property("id")]);
+
+            updateSlider2(list_options.get(li.property("id")));
 
             break;
         case "genre": case "country":
-            updateDblSelectList2(list_options[li.property("id")])
+            updateDblSelectList2(list_options.get(li.property("id")))
 
             break;
         case "actor": case "director": case "writer": case "company":
-            
-            updateNameList(list_options[li.property("id")])
+
+            updateNameList(list_options.get(li.property("id")))
             break;
         default:
             break;
     }
 
-    
-    // Increment the id variable
-    ID += 1
-    
+    new_pos = parseInt(tooltip.style("top")) + 45;
+    tooltip.style("top", new_pos + "px");
+
 };
 
 function updateSlider2(list_opt) {
-    
+
     let selector = list_opt["type"]
 
     // let container = list_opt["container"]
@@ -713,28 +722,28 @@ function updateSlider2(list_opt) {
     let value = selector.property("value");
 
     li.append("text")
-    .text(value)
-    
+        .text(value)
+
     // Remove the previous svg component (for the slider)
-    if(list_opt["slider"]) list_opt["slider"].remove();
+    if (list_opt["slider"]) list_opt["slider"].remove();
 
     // Create the order selector (higher than, lower than, equals to)
     var order = li.append("select")
-            // .on('change', function() { createMagOnMap();})
+    // .on('change', function() { createMagOnMap();})
 
     order.selectAll("option")
-            .data(["higher than", "equals to", "lower than"])
-            .enter()
-            .append("option")
-            .text(function(d){return d;})
-            .attr("value", function(d){return d;});
+        .data(["higher than", "equals to", "lower than"])
+        .enter()
+        .append("option")
+        .text(function (d) { return d; })
+        .attr("value", function (d) { return d; });
 
     list_opt["order"] = order;
 
     // Create a new svg for the new slider
     let new_slider_component = li.append('svg')
-            .attr('width', 600)
-            .attr('height', 70)
+        .attr('width', 600)
+        .attr('height', 70)
 
     // Update the dict
     list_opt["slider"] = new_slider_component;
@@ -744,7 +753,7 @@ function updateSlider2(list_opt) {
         case "budget":
             let minBudget = d3.min(movies, d => d.budget);
             let maxBudget = d3.max(movies, d => d.budget);
-        
+
             var new_slider = d3.sliderHorizontal()
                 .min(minBudget)
                 .max(maxBudget)
@@ -756,7 +765,7 @@ function updateSlider2(list_opt) {
                     list_opt["slider_value"] = val;
                     sliderCheckVal2(val, order, selector)
                 })
-                // .on('end', function() { createMagOnMap()});
+            // .on('end', function() { createMagOnMap()});
             break;
         case "gross":
             let minGross = 0;
@@ -773,12 +782,12 @@ function updateSlider2(list_opt) {
                     list_opt["slider_value"] = val;
                     sliderCheckVal2(val, order, selector)
                 })
-                // .on('end', function() { createMagOnMap()});
+            // .on('end', function() { createMagOnMap()});
             break;
         case "runtime":
             let minRuntime = d3.min(movies, d => d.runtime);
             let maxRuntime = d3.max(movies, d => d.runtime);
-        
+
             var new_slider = d3.sliderHorizontal()
                 .min(minRuntime)
                 .max(maxRuntime)
@@ -789,12 +798,12 @@ function updateSlider2(list_opt) {
                     list_opt["slider_value"] = val;
                     sliderCheckVal2(val, order, selector)
                 })
-                // .on('end', function() { createMagOnMap()});
+            // .on('end', function() { createMagOnMap()});
             break;
         case "score":
             let minScore = 0;
             let maxScore = 10;
-        
+
             var new_slider = d3.sliderHorizontal()
                 .min(minScore)
                 .max(maxScore)
@@ -805,12 +814,12 @@ function updateSlider2(list_opt) {
                     list_opt["slider_value"] = val;
                     sliderCheckVal2(val, order, selector)
                 })
-                // .on('end', function() { createMagOnMap()});
+            // .on('end', function() { createMagOnMap()});
             break;
         case "votes":
             let minVotes = 0;
             let maxVotes = Math.ceil(d3.max(movies, d => d.votes) / 100000) * 100000;
-        
+
             var new_slider = d3.sliderHorizontal()
                 .min(minVotes)
                 .max(maxVotes)
@@ -822,48 +831,69 @@ function updateSlider2(list_opt) {
                     list_opt["slider_value"] = val;
                     sliderCheckVal2(val, order, selector)
                 })
-                // .on('end', function() { createMagOnMap()});
+            // .on('end', function() { createMagOnMap()});
             break;
         default:
     }
 
     // Add the slider into the svg component
     new_slider_component.append('g')
-                        .attr('transform', 'translate(30,30)')
-                        .call(new_slider);
+        .attr('transform', 'translate(30,30)')
+        .call(new_slider);
 
-                        
+
     // TODO: reuseable
     let rightMenu = li.append("span")
-                .attr("class", "w3-button w3-display-right");
+        .attr("class", "w3-button w3-display-right");
 
 
     // Create a new svg for the new slider
     let new_magnets = rightMenu.append('svg')
-                            .attr('width', 50)
-                            .attr('height', 30)
-        
-    
+        .attr('width', 50)
+        .attr('height', 30)
+
+
     let rect = new_magnets.append("rect")
         .attr('x', '0px')
         .attr('y', '5px')
-        .attr('width','20px')
-        .attr('height','20px')
+        .attr('width', '20px')
+        .attr('height', '20px')
         .style('fill', fillScaleMag(currentMagnetid)) //TODO: fix with icon
-        .on("click", function() { 
+        .on("click", function () {
             list_opt["slider"].remove();
-            order.attr("disabled", "disabled") 
+            order.attr("disabled", "disabled")
             li.append("text")
                 .text(list_opt["slider_value"])
-            
-            createMagOnMap(rect); 
+
+            createMagOnMap(rect);
         })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
 
     rightMenu.append("span")
         .attr("class", "w3-button w3-display-right")
-        .on("click", function() { li.style("display", "none"); 
-                            delete list_options[li.property("id")]; 
-                            ; })
+        .on("click", function () {
+            magnet_to_delete = li.property("id");
+            magnetID_to_delete = parseInt(magnet_to_delete);
+            svg.select("#magnet" + magnet_to_delete).remove();
+            li.style("display", "none");
+            list_options.delete(magnet_to_delete);
+            magnets.delete(magnetID_to_delete);
+            maxMagnetsPerNode = 1;
+            nodes.forEach(function (d, i) {
+                if (mapOfMagnet.get(d.id).includes(magnetID_to_delete)) {
+                    mapOfMagnet.set(d.id, mapOfMagnet.get(d.id).filter(function (e) { return e !== magnetID_to_delete }))
+                    if (mapOfMagnet.get(d.id).length > maxMagnetsPerNode) {
+                        maxMagnetsPerNode = mapOfMagnet.get(d.id).length;
+                    }
+                    r = d3.randomUniform(0, h * 0.3)();
+                    theta = d3.randomUniform(0, 2 * 3.14)();
+                    d.x = w / 2 + r * Math.cos(theta);
+                    d.y = h / 2 + r * Math.sin(theta);
+                }
+            });
+            update_colors();
+            resetMagnets();
+            apply_magnets();
+        })
         .text("x")
 
 };
@@ -879,23 +909,23 @@ function updateDblSelectList2(list_opt) {
     let value = selector.property("value");
 
     li.append("text")
-    .text(value)
+        .text(value)
 
     var dblSelector = li.append("select")
-    .attr("id", "selectTmp")
-    .attr("class", "type")
-    .attr("height", 28)
-    .on('change', () => {dblCheckVal2(dblSelector, selector)})
+        .attr("id", "selectTmp")
+        .attr("class", "type")
+        .attr("height", 28)
+        .on('change', () => { dblCheckVal2(dblSelector, selector) })
 
     // Create the new slider depending on the type value
     switch (value) {
         case "country":
             dblSelector.selectAll("option")
-             .data(countryList)
-             .enter()
-             .append("option")
-             .text(function(d){return d;})
-             .attr("value", function(d) {return d;});
+                .data(countryList)
+                .enter()
+                .append("option")
+                .text(function (d) { return d; })
+                .attr("value", function (d) { return d; });
 
             break;
         case "genre":
@@ -903,43 +933,64 @@ function updateDblSelectList2(list_opt) {
                 .data(genreList)
                 .enter()
                 .append("option")
-                .text(function(d){return d;})
-                .attr("value", function(d) {return d;});
-   
-               break;
-        
+                .text(function (d) { return d; })
+                .attr("value", function (d) { return d; });
+
+            break;
+
         default:
     }
 
     let rightMenu = li.append("span")
-                .attr("class", "w3-button w3-display-right");
+        .attr("class", "w3-button w3-display-right");
 
 
     // Create a new svg for the new slider
     let new_magnets = rightMenu.append('svg')
-                            .attr('width', 50)
-                            .attr('height', 30)
-        
+        .attr('width', 50)
+        .attr('height', 30)
+
 
     let rect = new_magnets.append("rect")
         .attr('x', '0px')
         .attr('y', '5px')
-        .attr('width','20px')
-        .attr('height','20px')
+        .attr('width', '20px')
+        .attr('height', '20px')
         .style('fill', fillScaleMag(currentMagnetid)) //TODO: fix with icon
-        .on("click", function() { 
-            dblSelector.attr("disabled", "disabled")             
-            createMagOnMap(rect); 
+        .on("click", function () {
+            dblSelector.attr("disabled", "disabled")
+            createMagOnMap(rect);
         })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
 
 
     rightMenu.append("span")
         .attr("class", "w3-button w3-display-right")
-        .on("click", function() { li.style("display", "none"); 
-                            delete list_options[li.property("id")]; 
-                            ; })
+        .on("click", function () {
+            magnet_to_delete = li.property("id");
+            magnetID_to_delete = parseInt(magnet_to_delete);
+            svg.select("#magnet" + magnet_to_delete).remove();
+            li.style("display", "none");
+            list_options.delete(magnet_to_delete);
+            magnets.delete(magnetID_to_delete);
+            maxMagnetsPerNode = 1;
+            nodes.forEach(function (d, i) {
+                if (mapOfMagnet.get(d.id).includes(magnetID_to_delete)) {
+                    mapOfMagnet.set(d.id, mapOfMagnet.get(d.id).filter(function (e) { return e !== magnetID_to_delete }))
+                    if (mapOfMagnet.get(d.id).length > maxMagnetsPerNode) {
+                        maxMagnetsPerNode = mapOfMagnet.get(d.id).length;
+                    }
+                    r = d3.randomUniform(0, h * 0.3)();
+                    theta = d3.randomUniform(0, 2 * 3.14)();
+                    d.x = w / 2 + r * Math.cos(theta);
+                    d.y = h / 2 + r * Math.sin(theta);
+                }
+            });
+            update_colors();
+            resetMagnets();
+            apply_magnets();
+        })
         .text("x")
-            
+
 };
 
 function updateNameList(list_opt) {
@@ -951,7 +1002,7 @@ function updateNameList(list_opt) {
     let value = selector.property("value");
 
     li.append("text")
-    .text(value)
+        .text(value)
 
     updateLists(movies1000);
 
@@ -976,53 +1027,75 @@ function updateNameList(list_opt) {
 
     var search_div = li.append("div")
     var namelist = search_div.append("input")
-                           .attr("type", "text")
-                           .attr("placeholder", "Enter the name...")
-                           .on("click", function (e) { d3.selectAll(".autocomp_box").style("display", "none"); 
-                                                        li.select(".autocomp_box").style("display", "block"); 
-                                                        autocomp(e, autocomp_box, list_opt);
-                        })
-                           .on("keyup", (e) => autocomp(e, autocomp_box, list_opt))
-            
+        .attr("type", "text")
+        .attr("placeholder", "Enter the name...")
+        .on("click", function (e) {
+            d3.selectAll(".autocomp_box").style("display", "none");
+            li.select(".autocomp_box").style("display", "block");
+            autocomp(e, autocomp_box, list_opt);
+        })
+        .on("keyup", (e) => autocomp(e, autocomp_box, list_opt))
+
     var autocomp_box = search_div.append("div")
-                                        .attr("class", "autocomp_box")
-                                        .style("display", "none")
+        .attr("class", "autocomp_box")
+        .style("display", "none")
 
     list_opt["input"] = namelist;
 
     li.append("span")
-                .attr("class", "w3-button w3-display-right")
-                .on("click", function() { li.style("display", "none"); delete list_opt;})
-                .text("x")
-   
+        .attr("class", "w3-button w3-display-right")
+        .on("click", function () { li.style("display", "none"); delete list_opt; })
+        .text("x")
+
 
     let rightMenu = li.append("span")
-                .attr("class", "w3-button w3-display-right");
+        .attr("class", "w3-button w3-display-right");
 
 
     // Create a new svg for the new slider
     let new_magnets = rightMenu.append('svg')
-                            .attr('width', 50)
-                            .attr('height', 30)
-        
+        .attr('width', 50)
+        .attr('height', 30)
+
     let rect = new_magnets.append("rect")
         .attr('x', '0px')
         .attr('y', '5px')
-        .attr('width','20px')
-        .attr('height','20px')
+        .attr('width', '20px')
+        .attr('height', '20px')
         .style('fill', fillScaleMag(currentMagnetid)) //TODO: fix with icon
-        .on("click", function() { 
+        .on("click", function () {
             namelist.attr("disabled", "disabled");
-            nameCheckVal2(list_opt);           
-            createMagOnMap(rect); 
+            nameCheckVal2(list_opt);
+            createMagOnMap(rect);
         })  //TODO: click to create a circle following the mouse move => then click on somewhere on the map to "drop" (disappear from mouse, but show on the map)
 
 
     rightMenu.append("span")
         .attr("class", "w3-button w3-display-right")
-        .on("click", function() { li.style("display", "none"); 
-                            delete list_options[li.property("id")]; 
-                            ; })
+        .on("click", function () {
+            magnet_to_delete = li.property("id");
+            magnetID_to_delete = parseInt(magnet_to_delete);
+            svg.select("#magnet" + magnet_to_delete).remove();
+            li.style("display", "none");
+            list_options.delete(magnet_to_delete);
+            magnets.delete(magnetID_to_delete);
+            maxMagnetsPerNode = 1;
+            nodes.forEach(function (d, i) {
+                if (mapOfMagnet.get(d.id).includes(magnetID_to_delete)) {
+                    mapOfMagnet.set(d.id, mapOfMagnet.get(d.id).filter(function (e) { return e !== magnetID_to_delete }))
+                    if (mapOfMagnet.get(d.id).length > maxMagnetsPerNode) {
+                        maxMagnetsPerNode = mapOfMagnet.get(d.id).length;
+                    }
+                    r = d3.randomUniform(0, h * 0.3)();
+                    theta = d3.randomUniform(0, 2 * 3.14)();
+                    d.x = w / 2 + r * Math.cos(theta);
+                    d.y = h / 2 + r * Math.sin(theta);
+                }
+            });
+            update_colors();
+            resetMagnets();
+            apply_magnets();
+        })
         .text("x")
 }
 
@@ -1033,36 +1106,36 @@ function autocomp(e, autocomp_box, list_opt) {
 
     let suggestions = list_opt["name"];
 
-    if(userData != ""){
-     
-        emptyArray = suggestions.filter((data)=>{
+    if (userData != "") {
+
+        emptyArray = suggestions.filter((data) => {
             //filtering array value and user characters to lowercase and return only those words which are start with user enetered chars
-            return data.toLocaleLowerCase().startsWith(userData.toLocaleLowerCase()); 
+            return data.toLocaleLowerCase().startsWith(userData.toLocaleLowerCase());
         });
         //console.log(emptyArray)
-        
+
         //autocomp_box.style("display", "block") //show autocomplete box
-    } else{
+    } else {
         emptyArray = suggestions;
         //autocomp_box.style("display", "none") //hide autocomplete box
     }
 
     //console.log(":::::", emptyArray)
-    emptyArray = emptyArray.map((data)=>{
+    emptyArray = emptyArray.map((data) => {
         autocomp_box.append("li")
-                    .attr("class", "autocomp-items")
-                    .on("click", function() { e.target.value = data; autocomp_box.selectAll("li").remove(); autocomp_box.style("display", "none"); })
-                    .text(data)
+            .attr("class", "autocomp-items")
+            .on("click", function () { e.target.value = data; autocomp_box.selectAll("li").remove(); autocomp_box.style("display", "none"); })
+            .text(data)
     });
 
     nameCheckVal2(list_opt)
 
 }
 
-function nameCheckVal2(list_opt){ 
+function nameCheckVal2(list_opt) {
     let userData = list_opt['input'].property("value"); //user enetered data
 
-    userData = userData.toLocaleLowerCase(); 
+    userData = userData.toLocaleLowerCase();
     console.log("----->", userData)
 
     let selector = list_opt["type"]
@@ -1071,27 +1144,27 @@ function nameCheckVal2(list_opt){
 
     switch (value) {
         case "actor":
-            movies1000.forEach(function(d,i) {
-                if(d.star.toLocaleLowerCase().includes(userData) ){                   
+            movies1000.forEach(function (d, i) {
+                if (d.star.toLocaleLowerCase().includes(userData)) {
                     data.push(d.id);
                 }
             })
             break;
         case "director":
-            movies1000.forEach(function(d,i) {
-                if(d.director.toLocaleLowerCase().includes(userData))
+            movies1000.forEach(function (d, i) {
+                if (d.director.toLocaleLowerCase().includes(userData))
                     data.push(d.id);
             })
             break;
         case "writer":
-            movies1000.forEach(function(d,i) {
-                if(d.writer.toLocaleLowerCase().includes(userData))
+            movies1000.forEach(function (d, i) {
+                if (d.writer.toLocaleLowerCase().includes(userData))
                     data.push(d.id);
             })
             break;
         case "company":
-            movies1000.forEach(function(d,i) {
-                if(d.company.toLocaleLowerCase().includes(userData))
+            movies1000.forEach(function (d, i) {
+                if (d.company.toLocaleLowerCase().includes(userData))
                     data.push(d.id);
             })
             break;
@@ -1101,139 +1174,139 @@ function nameCheckVal2(list_opt){
     console.log(moviesAtt)
 }
 
-function sliderCheckVal2(val, order, selector){
-    
+function sliderCheckVal2(val, order, selector) {
+
     let select1 = selector.property("value");
-    
+
     let data = [];
 
     switch (select1) {
         case "budget":
-           if (order.property("value") ==  "higher than") {
-               movies1000.forEach(function(d,i) {
-                   if(d.budget > val)
-                       data.push(d.id);
-               })
+            if (order.property("value") == "higher than") {
+                movies1000.forEach(function (d, i) {
+                    if (d.budget > val)
+                        data.push(d.id);
+                })
 
-           } else if (order.property("value") ==  "equals to") {
-               movies1000.forEach(function(d,i) {
-                   if(d.budget = val)
-                       data.push(d.id);
-               })
-           } else {
-               movies1000.forEach(function(d,i) {
-                   if(d.budget < val)
-                       data.push(d.id);
-               })
-           }
-           break;
+            } else if (order.property("value") == "equals to") {
+                movies1000.forEach(function (d, i) {
+                    if (d.budget = val)
+                        data.push(d.id);
+                })
+            } else {
+                movies1000.forEach(function (d, i) {
+                    if (d.budget < val)
+                        data.push(d.id);
+                })
+            }
+            break;
         case "gross":
-           if (order.property("value") ==  "higher than") {
-               movies1000.forEach(function(d,i) {
-                   if(d.gross > val)
-                       data.push(d.id);
-               })
+            if (order.property("value") == "higher than") {
+                movies1000.forEach(function (d, i) {
+                    if (d.gross > val)
+                        data.push(d.id);
+                })
 
-           } else if (order.property("value") ==  "equals to") {
-               movies1000.forEach(function(d,i) {
-                   if(d.gross = val)
-                       data.push(d.id);
-               })
-           } else {
-               movies1000.forEach(function(d,i) {
-                   if(d.gross < val)
-                       data.push(d.id);
-               })
-           } 
-           break;
+            } else if (order.property("value") == "equals to") {
+                movies1000.forEach(function (d, i) {
+                    if (d.gross = val)
+                        data.push(d.id);
+                })
+            } else {
+                movies1000.forEach(function (d, i) {
+                    if (d.gross < val)
+                        data.push(d.id);
+                })
+            }
+            break;
         case "runtime":
-           if (order.property("value") ==  "higher than") {
-               movies1000.forEach(function(d,i) {
-                   if(d.runtime > val)
-                       data.push(d.id);
-               })
+            if (order.property("value") == "higher than") {
+                movies1000.forEach(function (d, i) {
+                    if (d.runtime > val)
+                        data.push(d.id);
+                })
 
-           } else if (order.property("value") ==  "equals to") {
-               movies1000.forEach(function(d,i) {
-                   if(d.runtime = val)
-                       data.push(d.id);
-               })
-           } else {
-               movies1000.forEach(function(d,i) {
-                   if(d.runtime < val)
-                       data.push(d.id);
-               })
-           } 
-           break;
+            } else if (order.property("value") == "equals to") {
+                movies1000.forEach(function (d, i) {
+                    if (d.runtime = val)
+                        data.push(d.id);
+                })
+            } else {
+                movies1000.forEach(function (d, i) {
+                    if (d.runtime < val)
+                        data.push(d.id);
+                })
+            }
+            break;
         case "score":
-           if (order.property("value") ==  "higher than") {
-               movies1000.forEach(function(d,i) {
-                   if(d.score > val)
-                       data.push(d.id);
-               })
+            if (order.property("value") == "higher than") {
+                movies1000.forEach(function (d, i) {
+                    if (d.score > val)
+                        data.push(d.id);
+                })
 
-           } else if (order.property("value") ==  "equals to") {
-               movies1000.forEach(function(d,i) {
-                   if(d.score = val)
-                       data.push(d.id);
-               })
-           } else {
-               movies1000.forEach(function(d,i) {
-                   if(d.score < val)
-                       data.push(d.id);
-               })
-           } 
-           break;
+            } else if (order.property("value") == "equals to") {
+                movies1000.forEach(function (d, i) {
+                    if (d.score = val)
+                        data.push(d.id);
+                })
+            } else {
+                movies1000.forEach(function (d, i) {
+                    if (d.score < val)
+                        data.push(d.id);
+                })
+            }
+            break;
         case "votes":
-           if (order.property("value") ==  "higher than") {
-               movies1000.forEach(function(d,i) {
-                   if(d.votes > val)
-                       data.push(d.id);
-               })
+            if (order.property("value") == "higher than") {
+                movies1000.forEach(function (d, i) {
+                    if (d.votes > val)
+                        data.push(d.id);
+                })
 
-           } else if (order.property("value") ==  "equals to") {
-               movies1000.forEach(function(d,i) {
-                   if(d.votes = val)
-                       data.push(d.id);
-               })
-           } else {
-               movies1000.forEach(function(d,i) {
-                   if(d.votes < val)
-                       data.push(d.id);
-               })
-           } 
-           break;
+            } else if (order.property("value") == "equals to") {
+                movies1000.forEach(function (d, i) {
+                    if (d.votes = val)
+                        data.push(d.id);
+                })
+            } else {
+                movies1000.forEach(function (d, i) {
+                    if (d.votes < val)
+                        data.push(d.id);
+                })
+            }
+            break;
         default:
-        
-    }   
-    
+
+    }
+
     moviesAtt = data;
     console.log(moviesAtt)
-    
+
 }
 
-function dblCheckVal2(dblselector, selector){ 
-    
+function dblCheckVal2(dblselector, selector) {
+
     let select1 = selector.property("value");
     let value = dblselector.property("value");  // selected country or genre
     let hint = "";
-    
+
     let data = [];
     switch (select1) {
         case "country":
-            movies1000.forEach(function(d,i) {
-                if(d.country === value)
+            movies1000.forEach(function (d, i) {
+                if (d.country === value)
                     data.push(d.id);
             })
             break;
         case "genre":
-            movies1000.forEach(function(d,i) {
-                if(d.genre === value)
+            movies1000.forEach(function (d, i) {
+                if (d.genre === value)
                     data.push(d.id);
             })
             break;
-        default:break;
-        
+        default: break;
+
     }
 
     moviesAtt = data;
@@ -1244,12 +1317,12 @@ function dblCheckVal2(dblselector, selector){
 
 // CHECK ME:
 
-function createMap(){ 
+function createMap() {
     alert("create a map");
     console.log(">>>>>>>>", movies1000)
     //movies1000 are nodes can be shown on map. Adjust the number by changing `max_nodes`
     //TODO:
-        
+
     nodes = movies1000;
 
     simulation = d3.forceSimulation(nodes)
@@ -1258,9 +1331,9 @@ function createMap(){
         }).strength(1.1))
         .on('tick', ticked);
 }
-function createMagOnMap(rect){
+function createMagOnMap(rect) {
     alert("create a magnet");
-    console.log(">>>>>>>>", moviesAtt); 
+    console.log(">>>>>>>>", moviesAtt);
     //moviesAtt contains the index array that will be attracted
     //TODO: 
     rect.on("click", null);
