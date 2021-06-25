@@ -928,13 +928,13 @@ function updateSlider2(list_opt) {
             nodes.forEach(function (d, i) {
                 if (mapOfMagnet.get(d.id).includes(magnetID_to_delete)) {
                     mapOfMagnet.set(d.id, mapOfMagnet.get(d.id).filter(function (e) { return e !== magnetID_to_delete }))
-                    if (mapOfMagnet.get(d.id).length > maxMagnetsPerNode) {
-                        maxMagnetsPerNode = mapOfMagnet.get(d.id).length;
-                    }
                     r = d3.randomUniform(0, h * 0.3)();
                     theta = d3.randomUniform(0, 2 * 3.14)();
                     d.x = 4 * w / 5 + r * Math.cos(theta);
                     d.y = 7 * h / 10 + r * Math.sin(theta);
+                }
+                if (mapOfMagnet.get(d.id).length > maxMagnetsPerNode) {
+                    maxMagnetsPerNode = mapOfMagnet.get(d.id).length;
                 }
             });
             update_colors();
@@ -1023,13 +1023,13 @@ function updateDblSelectList2(list_opt) {
             nodes.forEach(function (d, i) {
                 if (mapOfMagnet.get(d.id).includes(magnetID_to_delete)) {
                     mapOfMagnet.set(d.id, mapOfMagnet.get(d.id).filter(function (e) { return e !== magnetID_to_delete }))
-                    if (mapOfMagnet.get(d.id).length > maxMagnetsPerNode) {
-                        maxMagnetsPerNode = mapOfMagnet.get(d.id).length;
-                    }
                     r = d3.randomUniform(0, h * 0.3)();
                     theta = d3.randomUniform(0, 2 * 3.14)();
                     d.x = 4 * w / 5 + r * Math.cos(theta);
                     d.y = 7 * h / 10 + r * Math.sin(theta);
+                }
+                if (mapOfMagnet.get(d.id).length > maxMagnetsPerNode) {
+                    maxMagnetsPerNode = mapOfMagnet.get(d.id).length;
                 }
             });
             update_colors();
@@ -1130,13 +1130,13 @@ function updateNameList(list_opt) {
             nodes.forEach(function (d, i) {
                 if (mapOfMagnet.get(d.id).includes(magnetID_to_delete)) {
                     mapOfMagnet.set(d.id, mapOfMagnet.get(d.id).filter(function (e) { return e !== magnetID_to_delete }))
-                    if (mapOfMagnet.get(d.id).length > maxMagnetsPerNode) {
-                        maxMagnetsPerNode = mapOfMagnet.get(d.id).length;
-                    }
                     r = d3.randomUniform(0, h * 0.3)();
                     theta = d3.randomUniform(0, 2 * 3.14)();
                     d.x = 4 * w / 5 + r * Math.cos(theta);
                     d.y = 7 * h / 10 + r * Math.sin(theta);
+                }
+                if (mapOfMagnet.get(d.id).length > maxMagnetsPerNode) {
+                    maxMagnetsPerNode = mapOfMagnet.get(d.id).length;
                 }
             });
             update_colors();
